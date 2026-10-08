@@ -1,8 +1,9 @@
 """Pick 1 to 3 stops per driving day that match what this traveler loves.
 
 Candidates come from Foursquare (landmarks, outdoors, arts and museums; food is T20's job)
-along the whole route, then each day keeps the best-ranked ones within its own corridor
-whose detours still fit under the daily driving limit. Detours are driving, so they count
+along the whole route, plus "largest X" attractions for travelers who like them (T19). Each
+day keeps the best-ranked ones within its own corridor whose detours still fit under the
+daily driving limit. Detours are driving, so they count
 against the limit; time spent at a stop does not.
 
 Without ratings (a paid Foursquare field), generic neighborhood places such as a plain "Park"
@@ -18,6 +19,7 @@ from dave.days import DEFAULT_MAX_HOURS
 from dave.geo import Point, haversine_miles
 from dave.http import CachedClient
 from dave.interests import rank_stops
+from dave.largest_x import largest_x_stops, merge
 from dave.models import DayLeg, Interests, Place, Stop
 
 STOP_CATEGORIES = (
@@ -121,6 +123,8 @@ def find_pitstops(
 ) -> list[DayLeg]:
     line = [p for day in days for p in day.geometry]
     candidates = candidate_stops(line, http, api_key)
+    if interests.largest_x > 0:
+        candidates = merge(largest_x_stops(line, http, api_key), candidates)
     return plan_stops(days, candidates, interests, rv_length_ft=rv_length_ft, max_hours=max_hours)
 
 

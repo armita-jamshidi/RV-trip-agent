@@ -1,0 +1,53 @@
+{
+ "_note": "Synthetic: hand-written in the documented Foursquare /places/search format. Category searches along Austin to Nashville.",
+ "results": [
+  {
+   "fsq_place_id": "g1",
+   "name": "Waco Mammoth National Monument",
+   "latitude": 31.6066,
+   "longitude": -97.1756,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "National Park"
+    }
+   ]
+  },
+  {
+   "fsq_place_id": "g2",
+   "name": "Dallas Museum of Art",
+   "latitude": 32.7877,
+   "longitude": -96.801,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "Art Museum"
+    }
+   ]
+  },
+  {
+   "fsq_place_id": "g3",
+   "name": "Pinnacle Mountain State Park",
+   "latitude": 34.8418,
+   "longitude": -92.4911,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "State or Provincial Park"
+    }
+   ]
+  },
+  {
+   "fsq_place_id": "g4",
+   "name": "National Civil Rights Museum",
+   "latitude": 35.1345,
+   "longitude": -90.0576,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "History Museum"
+    }
+   ]
+  }
+ ]
+}
