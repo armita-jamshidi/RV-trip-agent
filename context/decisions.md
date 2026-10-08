@@ -7,3 +7,6 @@
 - 2026-10-08: Fine-tuning via QLoRA on Google Colab (Kaggle as backup); start with Qwen2.5-3B, move to 7B only if needed. Claude is the baseline.
 - 2026-10-08: One Notion task per branch and PR; hourly routine works one task per run.
 - 2026-10-08: The agent runs with built-in Claude Code tools disabled (`tools=[]`); Dave can only call its own tools in `src/dave/tools/`, so it can't touch files or run shell commands.
+- 2026-10-08: The request parser is one Claude call with structured outputs (`anthropic` SDK, `messages.parse`), not an agent loop. Claude returns only what the traveler stated (null otherwise), and code applies the domain defaults.
+- 2026-10-08: The parser asks a follow-up only for origin, destination (unless it's a loop), nights and RV. A start date is optional; prices fall back to estimates without one.
+- 2026-10-08: Parser accuracy compares free text loosely ("Moab, UT" = "Moab, Utah") and interest weights within ±0.3, since the weights are a judgment call.
