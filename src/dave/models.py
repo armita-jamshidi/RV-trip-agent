@@ -124,8 +124,9 @@ class RVProfile(Model):
 class Stop(Model):
     name: str
     location: Place
-    category: str
+    category: str  # Foursquare label path, e.g. "Landmarks and Outdoors > Park > National Park"
     rating: float | None = Field(default=None, ge=0, le=10)
+    popularity: float | None = Field(default=None, ge=0, le=1)
     detour_minutes: float = Field(default=0, ge=0)
     ticket_price_usd: float | None = Field(default=None, ge=0)
 
