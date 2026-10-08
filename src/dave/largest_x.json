@@ -1,0 +1,29 @@
+[
+  {
+    "name": "World's Largest Caterpillar",
+    "claim": "Joined dome buildings shaped like a caterpillar, billed as the world's largest; beside northbound I-35E at mile marker 387.",
+    "address": "Kinfolk Rd, Italy, TX",
+    "lat": 32.1828,
+    "lon": -96.8794,
+    "approximate": true,
+    "source": "https://www.roadsideamerica.com/tip/1278"
+  },
+  {
+    "name": "Pioneer Plaza Cattle Drive",
+    "claim": "Bronze cattle drive with cowboys, described as the largest bronze monument of its kind in the world.",
+    "address": "Pioneer Plaza, next to the convention center, downtown Dallas, TX",
+    "lat": 32.7764,
+    "lon": -96.8013,
+    "approximate": false,
+    "source": "https://en.wikipedia.org/wiki/Pioneer_Plaza"
+  },
+  {
+    "name": "Athena at the Parthenon",
+    "claim": "A 42-foot gilded Athena inside a full-scale Parthenon replica, the tallest indoor statue in the U.S.",
+    "address": "2600 West End Ave, Nashville, TN",
+    "lat": 36.1497,
+    "lon": -86.8133,
+    "approximate": false,
+    "source": "https://www.roadsideamerica.com/story/14603"
+  }
+]

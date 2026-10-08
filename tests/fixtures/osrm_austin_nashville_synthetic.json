@@ -1,0 +1,69 @@
+{
+ "_note": "Synthetic: hand-written in OSRM's /route/v1 response shape through Waco, Italy, Dallas, Texarkana, Little Rock, Memphis and Jackson. Totals approximate the published Austin to Nashville drive: about 860 miles, 12.5 h by car.",
+ "code": "Ok",
+ "routes": [
+  {
+   "distance": 1384000.0,
+   "duration": 45000.0,
+   "legs": [
+    {
+     "distance": 1384000.0,
+     "duration": 45000.0
+    }
+   ],
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -97.7431,
+      30.2672
+     ],
+     [
+      -97.1467,
+      31.5493
+     ],
+     [
+      -97.13,
+      32.011
+     ],
+     [
+      -96.8794,
+      32.1828
+     ],
+     [
+      -96.8483,
+      32.3865
+     ],
+     [
+      -96.797,
+      32.7767
+     ],
+     [
+      -95.6011,
+      33.1384
+     ],
+     [
+      -94.0377,
+      33.4418
+     ],
+     [
+      -92.2896,
+      34.7465
+     ],
+     [
+      -90.049,
+      35.1495
+     ],
+     [
+      -88.8139,
+      35.6145
+     ],
+     [
+      -86.7816,
+      36.1627
+     ]
+    ]
+   }
+  }
+ ]
+}

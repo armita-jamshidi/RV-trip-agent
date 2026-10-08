@@ -1,0 +1,35 @@
+{
+ "_note": "Synthetic: hand-written in the documented Foursquare /places/search format. Name searches for 'largest' and 'biggest'; the search is fuzzy, so some results don't make the claim.",
+ "results": [
+  {
+   "fsq_place_id": "n1",
+   "name": "World's Largest Caterpillar",
+   "latitude": 32.1831,
+   "longitude": -96.879,
+   "location": {
+    "formatted_address": "Italy, TX"
+   }
+  },
+  {
+   "fsq_place_id": "n2",
+   "name": "Arkansas's Biggest Peanut (synthetic)",
+   "latitude": 34.748,
+   "longitude": -92.29,
+   "location": {
+    "formatted_address": "Little Rock, AR"
+   }
+  },
+  {
+   "fsq_place_id": "n3",
+   "name": "Large Animal Veterinary Clinic",
+   "latitude": 33.44,
+   "longitude": -94.04
+  },
+  {
+   "fsq_place_id": "n4",
+   "name": "World's Fair Park",
+   "latitude": 33.442,
+   "longitude": -94.037
+  }
+ ]
+}
