@@ -179,6 +179,7 @@ class Campground(Model):
 
     name: str
     location: Place
+    description: str | None = None
     hookups: set[Hookup] = Field(default_factory=set)
     max_rv_length_ft: float | None = Field(default=None, gt=0)
     electrical_amps: set[int] = Field(default_factory=set)

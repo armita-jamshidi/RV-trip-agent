@@ -69,6 +69,8 @@ def test_ridb_keeps_campgrounds_with_rv_sites_and_their_hookups(tmp_path):
     assert devils.hookups == {Hookup.ELECTRIC, Hookup.WATER}
     assert devils.max_rv_length_ft == 40
     assert devils.nightly_price_usd == 25
+    assert devils.description.startswith("Overview Devils Garden sits among red rock fins")
+    assert "desert views & trailheads" in devils.description
     assert devils.booking_url == "https://www.recreation.gov/camping/campgrounds/251535"
     assert devils.source == "ridb"
 

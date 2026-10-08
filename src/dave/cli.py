@@ -23,6 +23,14 @@ def main(argv: list[str] | None = None) -> int:
     camp_cmd.add_argument("--demo", action="store_true", help="Use the demo/regions.json areas.")
     camp_cmd.add_argument("--radius", type=float, default=50, help="Miles around each point.")
     camp_cmd.add_argument("--out", default="data/campgrounds.jsonl")
+    index_cmd = sub.add_parser("index-campgrounds", help="Embed ingested campgrounds for search.")
+    index_cmd.add_argument("--from", dest="source", default="data/campgrounds.jsonl")
+    find_cmd = sub.add_parser("find-campgrounds", help="Search campgrounds by meaning.")
+    find_cmd.add_argument("query", help='e.g. "quiet lakeside with mountain views"')
+    find_cmd.add_argument("--hookups", default="", help="e.g. electric,water")
+    find_cmd.add_argument("--length", type=float, help="RV length in feet, tow vehicle included")
+    find_cmd.add_argument("--near", metavar="LAT,LON")
+    find_cmd.add_argument("--radius", type=float, default=50, help="Miles around --near.")
     args = parser.parse_args(argv)
 
     # Imports are deferred so --help stays fast.
@@ -91,6 +99,30 @@ def main(argv: list[str] | None = None) -> int:
         print(
             f"{len(found)} campgrounds ({hookups} with hookups, {lengths} with RV length) -> {out}"
         )
+        return 0
+    if args.command in {"index-campgrounds", "find-campgrounds"}:
+        from pathlib import Path
+
+        from dave.config import load_settings
+        from dave.models import Campground, Hookup
+        from dave.store.vectors import INDEX_PATH, CampgroundIndex, FastEmbedder
+
+        settings = load_settings()
+        index = CampgroundIndex(INDEX_PATH, FastEmbedder(settings.cache_dir / "models"))
+        if args.command == "index-campgrounds":
+            lines = Path(args.source).read_text().splitlines()
+            count = index.build(Campground.model_validate_json(line) for line in lines)
+            print(f"Indexed {count} campgrounds")
+            return 0
+        near = tuple(map(float, args.near.split(","))) if args.near else None
+        for camp, score in index.search(
+            args.query,
+            hookups=[Hookup(h.strip()) for h in args.hookups.split(",") if h.strip()],
+            min_length_ft=args.length,
+            near=near,
+            radius_miles=args.radius if near else None,
+        ):
+            print(f"{score:.2f}  {camp.name}  ({camp.location.lat:.3f}, {camp.location.lon:.3f})")
         return 0
     parser.print_help()
     return 0
