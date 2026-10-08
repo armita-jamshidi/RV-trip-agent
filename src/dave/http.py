@@ -21,6 +21,10 @@ class OfflineCacheMiss(RuntimeError):
     pass
 
 
+class SourceError(RuntimeError):
+    """An external data source answered with an error."""
+
+
 def cache_key(method: str, url: str, params: dict | None = None, body: object = None) -> str:
     payload = json.dumps(
         {"method": method.upper(), "url": url, "params": params or {}, "body": body},

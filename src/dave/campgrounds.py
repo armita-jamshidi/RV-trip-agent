@@ -14,8 +14,9 @@ from difflib import SequenceMatcher
 from html import unescape
 from pathlib import Path
 
+from dave import foursquare
 from dave.geo import Point, haversine_miles
-from dave.http import CachedClient
+from dave.http import CachedClient, SourceError
 from dave.models import Campground, CampSite, Hookup, Place
 
 DEMO_REGIONS = Path(__file__).resolve().parents[2] / "demo" / "regions.json"
@@ -24,12 +25,8 @@ RIDB_URL = "https://ridb.recreation.gov/api/v1"
 RIDB_PAGE = 50
 RECREATION_GOV_BOOKING = "https://www.recreation.gov/camping/campgrounds/{}"
 
-FSQ_URL = "https://places-api.foursquare.com/places/search"
-FSQ_VERSION = "2025-06-17"
 FSQ_CAMPING = ("4bf58dd8d48988d1e4941735", "52f2ab2ebcbc57f1066b8b53")  # Campground, RV Park
 FSQ_FIELDS = "fsq_place_id,name,latitude,longitude,location,website"
-FSQ_MAX_RADIUS_M = 100_000
-METERS_PER_MILE = 1609.344
 
 SAME_PLACE_MILES = 0.5
 SAME_SPOT_MILES = 0.1  # this close, names need not match
@@ -37,10 +34,6 @@ GENERIC_WORDS = {"campground", "campgrounds", "camp", "rv", "park", "resort", "t
 
 RV_EQUIPMENT = re.compile(r"\brv\b|trailer|fifth wheel|motorhome|camper van", re.IGNORECASE)
 YES = {"y", "yes", "true"}
-
-
-class SourceError(RuntimeError):
-    pass
 
 
 # --- Recreation.gov RIDB ------------------------------------------------------------
@@ -146,20 +139,10 @@ def _ridb_all(http: CachedClient, url: str, params: dict, api_key: str) -> list[
 def foursquare_campgrounds(
     center: Point, radius_miles: float, http: CachedClient, api_key: str
 ) -> list[Campground]:
-    response = http.get(
-        FSQ_URL,
-        params={
-            "ll": f"{center[0]},{center[1]}",
-            "radius": min(FSQ_MAX_RADIUS_M, round(radius_miles * METERS_PER_MILE)),
-            "fsq_category_ids": ",".join(FSQ_CAMPING),
-            "fields": FSQ_FIELDS,
-            "limit": 50,
-        },
-        headers={"Authorization": f"Bearer {api_key}", "X-Places-Api-Version": FSQ_VERSION},
+    places = foursquare.search(
+        center, radius_miles, http, api_key, categories=FSQ_CAMPING, fields=FSQ_FIELDS
     )
-    if not response.is_success:
-        raise SourceError(f"Foursquare returned {response.status_code}")
-    return [foursquare_campground(p) for p in response.json().get("results", [])]
+    return [foursquare_campground(p) for p in places]
 
 
 def foursquare_campground(place: dict) -> Campground:

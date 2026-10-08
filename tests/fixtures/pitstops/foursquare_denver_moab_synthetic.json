@@ -1,0 +1,281 @@
+{
+ "_note": "Synthetic: hand-written in the documented Foursquare Places API /places/search format (free fields only). Coordinates are real or close to real, except downtown Denver, which is packed tighter than reality to exercise the parking warning.",
+ "results": [
+  {
+   "fsq_place_id": "p1",
+   "name": "Red Rocks Park and Amphitheatre",
+   "latitude": 39.6654,
+   "longitude": -105.2057,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "Park"
+    },
+    {
+     "fsq_category_id": "c1",
+     "name": "Music Venue"
+    }
+   ],
+   "location": {
+    "formatted_address": "18300 W Alameda Pkwy, Morrison, CO 80465"
+   }
+  },
+  {
+   "fsq_place_id": "p2",
+   "name": "Hanging Lake Trail",
+   "latitude": 39.6014,
+   "longitude": -107.1917,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "Hiking Trail"
+    }
+   ],
+   "location": {
+    "formatted_address": "Glenwood Canyon, CO"
+   }
+  },
+  {
+   "fsq_place_id": "p3",
+   "name": "Glenwood Hot Springs",
+   "latitude": 39.5497,
+   "longitude": -107.3226,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "Hot Spring"
+    }
+   ],
+   "location": {
+    "formatted_address": "401 N River St, Glenwood Springs, CO 81601"
+   }
+  },
+  {
+   "fsq_place_id": "p4",
+   "name": "Denver Art Museum",
+   "latitude": 39.7372,
+   "longitude": -104.9893,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "Art Museum"
+    }
+   ],
+   "location": {
+    "formatted_address": "100 W 14th Ave Pkwy, Denver, CO 80204"
+   }
+  },
+  {
+   "fsq_place_id": "p5",
+   "name": "History Colorado Center",
+   "latitude": 39.7362,
+   "longitude": -104.9875,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "History Museum"
+    }
+   ],
+   "location": {
+    "formatted_address": "1200 N Broadway, Denver, CO 80203"
+   }
+  },
+  {
+   "fsq_place_id": "p6",
+   "name": "Clyfford Still Museum",
+   "latitude": 39.7369,
+   "longitude": -104.9901,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "Art Museum"
+    }
+   ],
+   "location": {
+    "formatted_address": "1250 Bannock St, Denver, CO 80204"
+   }
+  },
+  {
+   "fsq_place_id": "p7",
+   "name": "Kirkland Museum",
+   "latitude": 39.7365,
+   "longitude": -104.9886,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "Art Museum"
+    }
+   ],
+   "location": {
+    "formatted_address": "1201 Bannock St, Denver, CO 80204"
+   }
+  },
+  {
+   "fsq_place_id": "p8",
+   "name": "Molly Brown House Museum",
+   "latitude": 39.7376,
+   "longitude": -104.988,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "History Museum"
+    }
+   ],
+   "location": {
+    "formatted_address": "1340 Pennsylvania St, Denver, CO 80203"
+   }
+  },
+  {
+   "fsq_place_id": "p9",
+   "name": "Colorado State Capitol",
+   "latitude": 39.7385,
+   "longitude": -104.987,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "Capitol Building"
+    },
+    {
+     "fsq_category_id": "c1",
+     "name": "Historic and Protected Site"
+    }
+   ],
+   "location": {
+    "formatted_address": "200 E Colfax Ave, Denver, CO 80203"
+   }
+  },
+  {
+   "fsq_place_id": "p10",
+   "name": "Denver Firefighters Museum",
+   "latitude": 39.7381,
+   "longitude": -104.9896,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "History Museum"
+    }
+   ],
+   "location": {
+    "formatted_address": "1326 Tremont Pl, Denver, CO 80204"
+   }
+  },
+  {
+   "fsq_place_id": "p11",
+   "name": "Cheesman Park",
+   "latitude": 39.7329,
+   "longitude": -104.9661,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "Park"
+    }
+   ]
+  },
+  {
+   "fsq_place_id": "p12",
+   "name": "Washington Park Playground",
+   "latitude": 39.7,
+   "longitude": -104.97,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "Playground"
+    }
+   ]
+  },
+  {
+   "fsq_place_id": "p13",
+   "name": "Colorado National Monument",
+   "latitude": 39.0429,
+   "longitude": -108.6866,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "National Park"
+    }
+   ],
+   "location": {
+    "formatted_address": "1750 Rim Rock Dr, Fruita, CO 81521"
+   }
+  },
+  {
+   "fsq_place_id": "p14",
+   "name": "Museum of the West",
+   "latitude": 39.0687,
+   "longitude": -108.5662,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "History Museum"
+    }
+   ],
+   "location": {
+    "formatted_address": "462 Ute Ave, Grand Junction, CO 81501"
+   }
+  },
+  {
+   "fsq_place_id": "p15",
+   "name": "Arches National Park",
+   "latitude": 38.7331,
+   "longitude": -109.5925,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "National Park"
+    }
+   ],
+   "location": {
+    "formatted_address": "Moab, UT 84532"
+   }
+  },
+  {
+   "fsq_place_id": "p16",
+   "name": "Dead Horse Point State Park",
+   "latitude": 38.4706,
+   "longitude": -109.7406,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "State or Provincial Park"
+    },
+    {
+     "fsq_category_id": "c1",
+     "name": "Scenic Lookout"
+    }
+   ],
+   "location": {
+    "formatted_address": "UT-313, Moab, UT 84532"
+   }
+  },
+  {
+   "fsq_place_id": "p17",
+   "name": "Hole N\" The Rock",
+   "latitude": 38.3966,
+   "longitude": -109.4377,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "Monument"
+    }
+   ],
+   "location": {
+    "formatted_address": "11037 US-191, Moab, UT 84532"
+   }
+  },
+  {
+   "fsq_place_id": "p18",
+   "name": "Mesa Verde National Park",
+   "latitude": 37.2309,
+   "longitude": -108.4618,
+   "categories": [
+    {
+     "fsq_category_id": "c0",
+     "name": "National Park"
+    }
+   ],
+   "location": {
+    "formatted_address": "Mesa Verde, CO 81330"
+   }
+  }
+ ]
+}
