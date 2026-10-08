@@ -3,7 +3,7 @@
 from datetime import date, datetime
 from enum import StrEnum
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class Model(BaseModel):
@@ -229,6 +229,8 @@ class BookingStatus(StrEnum):
 
 
 class BookingProposal(Model):
+    """A booking Dave has prepared. Only `dave.booking` moves it past `proposed`."""
+
     kind: str = Field(description="campground or ticket")
     name: str
     start_date: date
@@ -239,6 +241,22 @@ class BookingProposal(Model):
     status: BookingStatus = BookingStatus.PROPOSED
     approved_by: str | None = None
     approved_at: datetime | None = None
+    approved_terms: str | None = Field(
+        default=None, description="Digest of the terms the person approved"
+    )
+    confirmation: str | None = None
+
+    @model_validator(mode="after")
+    def _approval_recorded(self) -> "BookingProposal":
+        approval = (self.approved_by, self.approved_at, self.approved_terms)
+        if self.status is BookingStatus.PROPOSED:
+            if any(approval) or self.confirmation:
+                raise ValueError("A proposed booking has no approval or confirmation yet.")
+        elif not all(approval):
+            raise ValueError(f"A {self.status} booking needs who approved it, when, and what.")
+        if self.status is BookingStatus.BOOKED and not self.confirmation:
+            raise ValueError("A booked booking needs its confirmation.")
+        return self
 
 
 class Itinerary(Model):
