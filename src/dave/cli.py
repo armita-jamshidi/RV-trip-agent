@@ -18,6 +18,11 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("eval-parser", help="Score the request parser on evals/parser/cases.jsonl.")
     route_cmd = sub.add_parser("route", help="RV route through points given as lat,lon.")
     route_cmd.add_argument("points", nargs="+", metavar="LAT,LON")
+    camp_cmd = sub.add_parser("campgrounds", help="Ingest campgrounds around points.")
+    camp_cmd.add_argument("points", nargs="*", metavar="LAT,LON")
+    camp_cmd.add_argument("--demo", action="store_true", help="Use the demo/regions.json areas.")
+    camp_cmd.add_argument("--radius", type=float, default=50, help="Miles around each point.")
+    camp_cmd.add_argument("--out", default="data/campgrounds.jsonl")
     args = parser.parse_args(argv)
 
     # Imports are deferred so --help stays fast.
@@ -56,6 +61,36 @@ def main(argv: list[str] | None = None) -> int:
         with CachedClient(settings.cache_dir / "http", offline=settings.offline) as http:
             r = route(places, http)
         print(f"{r.miles:.0f} miles, {r.car_hours:.1f} h by car, {r.drive_hours:.1f} h by RV")
+        return 0
+    if args.command == "campgrounds":
+        from pathlib import Path
+
+        from dave.campgrounds import DEMO_REGIONS, ingest
+        from dave.config import load_settings
+        from dave.http import CachedClient
+
+        settings = load_settings()
+        centers = [tuple(map(float, p.split(","))) for p in args.points]
+        if args.demo:
+            centers += [(r["lat"], r["lon"]) for r in json.loads(DEMO_REGIONS.read_text())]
+        if not centers:
+            parser.error("give LAT,LON points or --demo")
+        with CachedClient(settings.cache_dir / "http", offline=settings.offline) as http:
+            found = ingest(
+                centers,
+                args.radius,
+                http,
+                ridb_key=settings.require("RIDB_API_KEY"),
+                foursquare_key=settings.require("FOURSQUARE_API_KEY"),
+            )
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text("".join(c.model_dump_json() + "\n" for c in found))
+        hookups = sum(1 for c in found if c.hookups)
+        lengths = sum(1 for c in found if c.max_rv_length_ft)
+        print(
+            f"{len(found)} campgrounds ({hookups} with hookups, {lengths} with RV length) -> {out}"
+        )
         return 0
     parser.print_help()
     return 0

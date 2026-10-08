@@ -1,0 +1,27 @@
+{
+  "_note": "Synthetic: hand-written in the documented RIDB v1 /facilities/{id}/campsites format.",
+  "RECDATA": [
+    {
+      "CampsiteID": "1", "CampsiteName": "001", "CampsiteType": "STANDARD NONELECTRIC",
+      "ATTRIBUTES": [
+        {"AttributeName": "Max Vehicle Length", "AttributeValue": "30"},
+        {"AttributeName": "Water Hookup", "AttributeValue": "N"}
+      ],
+      "PERMITTEDEQUIPMENT": [{"EquipmentName": "RV", "MaxLength": 30}, {"EquipmentName": "Tent", "MaxLength": 0}]
+    },
+    {
+      "CampsiteID": "2", "CampsiteName": "002", "CampsiteType": "RV ELECTRIC",
+      "ATTRIBUTES": [
+        {"AttributeName": "Electricity Hookup", "AttributeValue": "30/50"},
+        {"AttributeName": "Water Hookup", "AttributeValue": "Y"}
+      ],
+      "PERMITTEDEQUIPMENT": [{"EquipmentName": "RV", "MaxLength": 40}, {"EquipmentName": "Fifth Wheel", "MaxLength": 35}]
+    },
+    {
+      "CampsiteID": "3", "CampsiteName": "003", "CampsiteType": "TENT ONLY NONELECTRIC",
+      "ATTRIBUTES": [],
+      "PERMITTEDEQUIPMENT": [{"EquipmentName": "Tent", "MaxLength": 0}]
+    }
+  ],
+  "METADATA": {"RESULTS": {"CURRENT_COUNT": 3, "TOTAL_COUNT": 3}}
+}

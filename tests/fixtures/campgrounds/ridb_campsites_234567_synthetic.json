@@ -1,0 +1,11 @@
+{
+  "_note": "Synthetic: hand-written in the documented RIDB v1 /facilities/{id}/campsites format.",
+  "RECDATA": [
+    {
+      "CampsiteID": "10", "CampsiteName": "A1", "CampsiteType": "STANDARD NONELECTRIC",
+      "ATTRIBUTES": [{"AttributeName": "Full Hookup", "AttributeValue": "Y"}, {"AttributeName": "Max Vehicle Length", "AttributeValue": "45"}],
+      "PERMITTEDEQUIPMENT": [{"EquipmentName": "Trailer"}]
+    }
+  ],
+  "METADATA": {"RESULTS": {"CURRENT_COUNT": 1, "TOTAL_COUNT": 1}}
+}
