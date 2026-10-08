@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "Dave, an AI travel agent that plans RV road trips."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pydantic>=2.13.5",
+]
 
 [project.scripts]
 dave = "dave.cli:main"
