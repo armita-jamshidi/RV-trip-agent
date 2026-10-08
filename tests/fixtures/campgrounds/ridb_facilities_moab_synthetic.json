@@ -8,7 +8,8 @@
       "FacilityLatitude": 38.7783,
       "FacilityLongitude": -109.5874,
       "FacilityUseFeeDescription": "Individual sites $25 per night; group sites $75 to $250 per night.",
-      "Reservable": true
+      "Reservable": true,
+      "FacilityDescription": "<h2>Overview</h2><p>Devils Garden sits among red rock fins at the end of the Arches scenic drive, with desert views &amp; trailheads.</p>"
     },
     {
       "FacilityID": "234567",
@@ -17,7 +18,8 @@
       "FacilityLatitude": 38.4789,
       "FacilityLongitude": -109.4263,
       "FacilityUseFeeDescription": "$20 per night",
-      "Reservable": false
+      "Reservable": false,
+      "FacilityDescription": "<p>Ken's Lake is a quiet reservoir campground south of Moab with views of the La Sal Mountains.</p>"
     },
     {
       "FacilityID": "999001",
@@ -27,5 +29,10 @@
       "FacilityLongitude": -109.6199
     }
   ],
-  "METADATA": {"RESULTS": {"CURRENT_COUNT": 3, "TOTAL_COUNT": 3}}
+  "METADATA": {
+    "RESULTS": {
+      "CURRENT_COUNT": 3,
+      "TOTAL_COUNT": 3
+    }
+  }
 }

@@ -11,6 +11,7 @@ once, preferring the RIDB record because it has site details.
 import re
 from collections.abc import Iterable
 from difflib import SequenceMatcher
+from html import unescape
 from pathlib import Path
 
 from dave.geo import Point, haversine_miles
@@ -72,6 +73,7 @@ def ridb_campground(facility: dict, sites: list[CampSite]) -> Campground:
             lat=facility["FacilityLatitude"],
             lon=facility["FacilityLongitude"],
         ),
+        description=_plain_text(facility.get("FacilityDescription") or "") or None,
         hookups=set().union(*(s.hookups for s in sites)),
         max_rv_length_ft=max(lengths, default=None),
         electrical_amps=set().union(*(s.electrical_amps for s in sites)),
@@ -207,6 +209,11 @@ def ingest(
         found += ridb_campgrounds(center, radius_miles, http, ridb_key)
         found += foursquare_campgrounds(center, radius_miles, http, foursquare_key)
     return merge(found)
+
+
+def _plain_text(html: str) -> str:
+    """RIDB descriptions are HTML; keep the words."""
+    return " ".join(unescape(re.sub(r"<[^>]+>", " ", html)).split())
 
 
 def _tidy_name(name: str) -> str:
