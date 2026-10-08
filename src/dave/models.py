@@ -165,12 +165,24 @@ class GasStation(Model):
     rv_accessible: bool | None = None
 
 
+class CampSite(Model):
+    """One bookable RV site. Hookups and length are only meaningful together, per site."""
+
+    name: str
+    hookups: set[Hookup] = Field(default_factory=set)
+    max_rv_length_ft: float | None = Field(default=None, gt=0)
+    electrical_amps: set[int] = Field(default_factory=set)
+
+
 class Campground(Model):
+    """Campground-level hookups, length and amps summarize the best of its `sites`, when known."""
+
     name: str
     location: Place
     hookups: set[Hookup] = Field(default_factory=set)
     max_rv_length_ft: float | None = Field(default=None, gt=0)
     electrical_amps: set[int] = Field(default_factory=set)
+    sites: list[CampSite] = Field(default_factory=list)
     nightly_price_usd: float | None = Field(default=None, ge=0)
     rating: float | None = Field(default=None, ge=0, le=10)
     booking_url: str | None = None

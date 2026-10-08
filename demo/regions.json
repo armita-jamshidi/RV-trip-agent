@@ -1,0 +1,6 @@
+[
+  {"trip": 1, "name": "Moab, UT", "lat": 38.5733, "lon": -109.5498},
+  {"trip": 2, "name": "Washington, DC", "lat": 38.9072, "lon": -77.0369},
+  {"trip": 3, "name": "Nashville, TN", "lat": 36.1627, "lon": -86.7816},
+  {"trip": 4, "name": "Yellowstone National Park", "lat": 44.428, "lon": -110.5885}
+]
