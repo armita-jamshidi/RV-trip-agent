@@ -121,11 +121,29 @@ class RVProfile(Model):
         return self.length_ft + self.tow_length_ft
 
 
+class RouteLeg(Model):
+    """Driving between two consecutive points of a route."""
+
+    miles: float = Field(ge=0)
+    drive_hours: float = Field(ge=0)
+
+
+class Route(Model):
+    """A drivable route. `drive_hours` already includes the RV speed penalty."""
+
+    miles: float = Field(ge=0)
+    car_hours: float = Field(ge=0)
+    drive_hours: float = Field(ge=0)
+    legs: list[RouteLeg]
+    geometry: list[tuple[float, float]]  # (lat, lon) along the road
+
+
 class Stop(Model):
     name: str
     location: Place
-    category: str
+    category: str  # Foursquare label path, e.g. "Landmarks and Outdoors > Park > National Park"
     rating: float | None = Field(default=None, ge=0, le=10)
+    popularity: float | None = Field(default=None, ge=0, le=1)
     detour_minutes: float = Field(default=0, ge=0)
     ticket_price_usd: float | None = Field(default=None, ge=0)
 

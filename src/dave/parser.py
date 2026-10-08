@@ -1,6 +1,6 @@
 """Trip request -> ConstraintSpec. Claude extracts what the traveler said; code applies defaults.
 
-This is the baseline the fine-tuned parser (T26) must beat on `evals/parser/cases.jsonl`.
+This is the baseline the fine-tuned parser (T29) must beat on `evals/parser/cases.jsonl`.
 """
 
 import hashlib
