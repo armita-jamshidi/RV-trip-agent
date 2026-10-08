@@ -31,6 +31,10 @@ def main(argv: list[str] | None = None) -> int:
     find_cmd.add_argument("--length", type=float, help="RV length in feet, tow vehicle included")
     find_cmd.add_argument("--near", metavar="LAT,LON")
     find_cmd.add_argument("--radius", type=float, default=50, help="Miles around --near.")
+    stops_cmd = sub.add_parser("pitstops", help="Stops worth making along a route, per day.")
+    stops_cmd.add_argument("points", nargs="+", metavar="LAT,LON")
+    stops_cmd.add_argument("--interests", default="", help="e.g. nature=0.9,museums=0.2")
+    stops_cmd.add_argument("--rv-length", type=float, help="RV length in feet, tow included")
     scenic_cmd = sub.add_parser("eval-scenic", help="Score scenic ranking on labeled campgrounds.")
     scenic_cmd.add_argument("--campgrounds", default="data/campgrounds.jsonl")
     args = parser.parse_args(argv)
@@ -125,6 +129,35 @@ def main(argv: list[str] | None = None) -> int:
             radius_miles=args.radius if near else None,
         ):
             print(f"{score:.2f}  {camp.name}  ({camp.location.lat:.3f}, {camp.location.lon:.3f})")
+        return 0
+    if args.command == "pitstops":
+        from dave.config import load_settings
+        from dave.days import split_days
+        from dave.http import CachedClient
+        from dave.models import Interests, Place
+        from dave.pitstops import find_pitstops
+        from dave.routing import route
+
+        settings = load_settings()
+        places = [Place(name=p, lat=p.split(",")[0], lon=p.split(",")[1]) for p in args.points]
+        interests = Interests(
+            **{k: float(v) for k, v in (kv.split("=") for kv in args.interests.split(",") if kv)}
+        )
+        with CachedClient(settings.cache_dir / "http", offline=settings.offline) as http:
+            days = split_days(route(places, http), places[0], places[-1])
+            days = find_pitstops(
+                days,
+                interests,
+                http,
+                settings.require("FOURSQUARE_API_KEY"),
+                rv_length_ft=args.rv_length,
+            )
+        for day in days:
+            print(f"Day {day.day}: {day.drive_hours:.1f} h driving")
+            for s in day.stops:
+                print(f"  {s.name} ({s.category}), +{s.detour_minutes:.0f} min detour")
+                if s.rv_parking_note:
+                    print(f"    {s.rv_parking_note}")
         return 0
     if args.command == "eval-scenic":
         from pathlib import Path
