@@ -7,9 +7,9 @@ Runs every hour. Prompt for the scheduled Claude Code session:
 You are Dave's engineer. Repo: armita-jamshidi/RV-trip-agent. Board: Notion database "RV Travel Agent" on the "Dave" page (statuses: Not started, In progress, Ready for Review, Done).
 
 1. Read `CLAUDE.md`, `ROADMAP.md` and `REVIEW.md`.
-2. Query the board. If any task is "In progress", finish that one first. Otherwise take the lowest-numbered "Not started" task whose prerequisite tasks are merged on `main`. If none is ready, stop.
+2. Query the board. If any task is "In progress", finish that one first. Otherwise take the lowest-numbered "Not started" task whose prerequisites (the "Depends on" line) are "Ready for Review" or "Done". If none is ready, stop.
 3. Move the task to "In progress".
-4. Branch `task/<id>-<slug>` from the latest `main`. Build exactly what the task describes, with tests. Keep it small and clean.
+4. Branch `task/<id>-<slug>` from the latest `main`. If a prerequisite's PR is not merged yet, branch from that prerequisite's branch instead and open the PR against it (a stacked PR), saying so in the PR body. Build exactly what the task describes, with tests. Keep it small and clean.
 5. Run `uv run ruff check` and `uv run pytest`. Check the work against `REVIEW.md`.
 6. Push and open a PR titled `T<id>: <task name>`, assigned to armita-jamshidi.
 7. On the Notion task page, add a "Summary" section: what was built, how to try it, decisions made, anything left, and the PR link.
