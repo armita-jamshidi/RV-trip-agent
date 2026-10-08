@@ -16,6 +16,8 @@ def main(argv: list[str] | None = None) -> int:
     parse_cmd = sub.add_parser("parse", help="Turn a trip request into a constraint spec.")
     parse_cmd.add_argument("request")
     sub.add_parser("eval-parser", help="Score the request parser on evals/parser/cases.jsonl.")
+    route_cmd = sub.add_parser("route", help="RV route through points given as lat,lon.")
+    route_cmd.add_argument("points", nargs="+", metavar="LAT,LON")
     args = parser.parse_args(argv)
 
     # Imports are deferred so --help stays fast.
@@ -43,6 +45,18 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(json.dumps(report, indent=2))
         return 0 if report["accuracy"] >= parser_eval.TARGET else 1
+    if args.command == "route":
+        from dave.config import load_settings
+        from dave.http import CachedClient
+        from dave.models import Place
+        from dave.routing import route
+
+        settings = load_settings()
+        places = [Place(name=p, lat=p.split(",")[0], lon=p.split(",")[1]) for p in args.points]
+        with CachedClient(settings.cache_dir / "http", offline=settings.offline) as http:
+            r = route(places, http)
+        print(f"{r.miles:.0f} miles, {r.car_hours:.1f} h by car, {r.drive_hours:.1f} h by RV")
+        return 0
     parser.print_help()
     return 0
 

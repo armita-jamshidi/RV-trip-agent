@@ -13,3 +13,4 @@
 - 2026-10-08: RV identification is an offline catalog match (9 manufacturers, their main model lines), not an LLM call. Model names that are everyday words ("View", "Classic", "Interstate") only match when the manufacturer is named.
 - 2026-10-08: The catalog stores each manufacturer's site, not spec-page URL patterns. Manufacturer sites are blocked by this environment's network policy, so URL patterns can't be verified yet; T07 finds the spec page.
 - 2026-10-08: Interests map to words in Foursquare category labels rather than category IDs, so the mapping survives taxonomy changes. Stop score = best matching interest weight × quality (60% rating, 40% popularity) × 0.5^(detour / 30 min). Unrated stops get a 6/10 prior.
+- 2026-10-08: Routing uses the public OSRM demo server (car profile) with RV drive time = car time × 1.10, configurable. OSRM has no RV or truck profile; bridge heights are handled separately (T10).

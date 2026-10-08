@@ -1,0 +1,25 @@
+{
+  "_note": "Hand-written in OSRM's documented /route/v1 response shape (not recorded: OSRM was unreachable from the build environment). Distance and time match the published Denver to Moab drive: about 354 miles, 5 h 20 min by car.",
+  "code": "Ok",
+  "waypoints": [
+    {"name": "Colfax Avenue", "location": [-104.9903, 39.7392]},
+    {"name": "Main Street", "location": [-109.5498, 38.5733]}
+  ],
+  "routes": [
+    {
+      "distance": 569700.0,
+      "duration": 19200.0,
+      "weight_name": "routability",
+      "weight": 19200.0,
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-104.9903, 39.7392], [-105.5130, 39.7420], [-106.3740, 39.6400],
+          [-107.3250, 39.5500], [-108.5510, 39.0640], [-109.8200, 38.9480],
+          [-109.5498, 38.5733]
+        ]
+      },
+      "legs": [{"distance": 569700.0, "duration": 19200.0, "summary": "I 70, US 191", "steps": []}]
+    }
+  ]
+}

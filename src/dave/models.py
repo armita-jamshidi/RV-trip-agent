@@ -121,6 +121,23 @@ class RVProfile(Model):
         return self.length_ft + self.tow_length_ft
 
 
+class RouteLeg(Model):
+    """Driving between two consecutive points of a route."""
+
+    miles: float = Field(ge=0)
+    drive_hours: float = Field(ge=0)
+
+
+class Route(Model):
+    """A drivable route. `drive_hours` already includes the RV speed penalty."""
+
+    miles: float = Field(ge=0)
+    car_hours: float = Field(ge=0)
+    drive_hours: float = Field(ge=0)
+    legs: list[RouteLeg]
+    geometry: list[tuple[float, float]]  # (lat, lon) along the road
+
+
 class Stop(Model):
     name: str
     location: Place
