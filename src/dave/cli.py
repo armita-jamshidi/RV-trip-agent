@@ -31,6 +31,8 @@ def main(argv: list[str] | None = None) -> int:
     find_cmd.add_argument("--length", type=float, help="RV length in feet, tow vehicle included")
     find_cmd.add_argument("--near", metavar="LAT,LON")
     find_cmd.add_argument("--radius", type=float, default=50, help="Miles around --near.")
+    scenic_cmd = sub.add_parser("eval-scenic", help="Score scenic ranking on labeled campgrounds.")
+    scenic_cmd.add_argument("--campgrounds", default="data/campgrounds.jsonl")
     args = parser.parse_args(argv)
 
     # Imports are deferred so --help stays fast.
@@ -124,6 +126,25 @@ def main(argv: list[str] | None = None) -> int:
         ):
             print(f"{score:.2f}  {camp.name}  ({camp.location.lat:.3f}, {camp.location.lon:.3f})")
         return 0
+    if args.command == "eval-scenic":
+        from pathlib import Path
+
+        from dave import scenic
+        from dave.config import load_settings
+        from dave.models import Campground
+        from dave.store.vectors import FastEmbedder
+
+        if not scenic.LABELS.exists():
+            parser.error(f"label ingested campgrounds in {scenic.LABELS} first")
+        rows = [json.loads(line) for line in scenic.LABELS.read_text().splitlines()]
+        lines = Path(args.campgrounds).read_text().splitlines()
+        report = scenic.evaluate(
+            [Campground.model_validate_json(line) for line in lines],
+            {r["name"]: r["scenic"] for r in rows},
+            FastEmbedder(load_settings().cache_dir / "models"),
+        )
+        print(json.dumps(report, indent=2))
+        return 0 if report["precision"] >= scenic.TARGET and not report["missing"] else 1
     parser.print_help()
     return 0
 
