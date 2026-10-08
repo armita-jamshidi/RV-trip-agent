@@ -3,9 +3,10 @@
 from claude_agent_sdk import SdkMcpTool, create_sdk_mcp_server
 
 from dave.tools.defaults import trip_defaults
+from dave.tools.rv import identify_rv_tool
 
 SERVER_NAME = "dave"
-TOOLS: list[SdkMcpTool] = [trip_defaults]
+TOOLS: list[SdkMcpTool] = [trip_defaults, identify_rv_tool]
 
 
 def allowed_tool_names(tools: list[SdkMcpTool] = TOOLS) -> list[str]:

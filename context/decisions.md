@@ -10,3 +10,5 @@
 - 2026-10-08: The request parser is one Claude call with structured outputs (`anthropic` SDK, `messages.parse`), not an agent loop. Claude returns only what the traveler stated (null otherwise), and code applies the domain defaults.
 - 2026-10-08: The parser asks a follow-up only for origin, destination (unless it's a loop), nights and RV. A start date is optional; prices fall back to estimates without one.
 - 2026-10-08: Parser accuracy compares free text loosely ("Moab, UT" = "Moab, Utah") and interest weights within ±0.3, since the weights are a judgment call.
+- 2026-10-08: RV identification is an offline catalog match (9 manufacturers, their main model lines), not an LLM call. Model names that are everyday words ("View", "Classic", "Interstate") only match when the manufacturer is named.
+- 2026-10-08: The catalog stores each manufacturer's site, not spec-page URL patterns. Manufacturer sites are blocked by this environment's network policy, so URL patterns can't be verified yet; T07 finds the spec page.

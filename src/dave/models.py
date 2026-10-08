@@ -81,6 +81,24 @@ class ConstraintSpec(Model):
 # --- What Dave found ---------------------------------------------------------------
 
 
+class RVIdentity(Model):
+    """A specific RV line from the catalog, before its dimensions are looked up."""
+
+    make: str
+    model: str
+    floorplan: str | None = None
+    year: int | None = Field(default=None, ge=1950, le=2100)
+    rv_class: RVClass | None = None
+    site: str
+
+
+class RVIdentification(Model):
+    """One confident match, or a short list for the agent to ask the traveler about."""
+
+    match: RVIdentity | None = None
+    candidates: list[RVIdentity] = []
+
+
 class RVProfile(Model):
     make: str
     model: str
