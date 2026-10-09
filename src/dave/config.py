@@ -18,6 +18,9 @@ class Settings:
     cache_dir: Path
     offline: bool
     keys: dict[str, str]
+    embed_model: Path | None = None  # a fine-tuned ONNX embedding model dir (T30)
+    parser_url: str | None = None  # an OpenAI-compatible server for the fine-tuned parser (T31)
+    parser_model: str = "dave-parser"
 
     def require(self, name: str) -> str:
         """Return an API key, or explain exactly how to provide it."""
@@ -35,4 +38,7 @@ def load_settings(env_file: Path | str = ".env") -> Settings:
         cache_dir=Path(os.environ.get("DAVE_CACHE_DIR", ".cache/dave")),
         offline=os.environ.get("DAVE_OFFLINE", "") in {"1", "true", "yes"},
         keys={name: os.environ[name] for name in API_KEYS if os.environ.get(name)},
+        embed_model=Path(p) if (p := os.environ.get("DAVE_EMBED_MODEL")) else None,
+        parser_url=os.environ.get("DAVE_PARSER_URL") or None,
+        parser_model=os.environ.get("DAVE_PARSER_MODEL") or "dave-parser",
     )
