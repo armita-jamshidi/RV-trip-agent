@@ -40,6 +40,8 @@ def main(argv: list[str] | None = None) -> int:
     stops_cmd.add_argument("points", nargs="+", metavar="LAT,LON")
     stops_cmd.add_argument("--interests", default="", help="e.g. nature=0.9,museums=0.2")
     stops_cmd.add_argument("--rv-length", type=float, help="RV length in feet, tow included")
+    rv_cmd = sub.add_parser("rv", help="Look up an RV's size from the manufacturer's spec page.")
+    rv_cmd.add_argument("description", help='e.g. "2023 Winnebago Minnie Winnie 31K"')
     scenic_cmd = sub.add_parser("eval-scenic", help="Score scenic ranking on labeled campgrounds.")
     scenic_cmd.add_argument("--campgrounds", default="data/campgrounds.jsonl")
     args = parser.parse_args(argv)
@@ -189,6 +191,12 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"  {s.name} ({s.category}), +{s.detour_minutes:.0f} min detour")
                 if s.rv_parking_note:
                     print(f"    {s.rv_parking_note}")
+        return 0
+    if args.command == "rv":
+        from dave.tools.rv import rv_dimensions_tool
+
+        out = asyncio.run(rv_dimensions_tool.handler({"text": args.description}))
+        print(out["content"][0]["text"])
         return 0
     if args.command == "eval-scenic":
         from pathlib import Path
