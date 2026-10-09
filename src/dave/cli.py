@@ -16,6 +16,7 @@ def main(argv: list[str] | None = None) -> int:
     parse_cmd = sub.add_parser("parse", help="Turn a trip request into a constraint spec.")
     parse_cmd.add_argument("request")
     sub.add_parser("eval-parser", help="Score the request parser on evals/parser/cases.jsonl.")
+    sub.add_parser("compare-parsers", help="Demo trips parsed by Claude and the fine-tuned model.")
     route_cmd = sub.add_parser("route", help="RV route through points given as lat,lon.")
     route_cmd.add_argument("points", nargs="+", metavar="LAT,LON")
     camp_cmd = sub.add_parser("campgrounds", help="Ingest campgrounds around points.")
@@ -31,6 +32,10 @@ def main(argv: list[str] | None = None) -> int:
     find_cmd.add_argument("--length", type=float, help="RV length in feet, tow vehicle included")
     find_cmd.add_argument("--near", metavar="LAT,LON")
     find_cmd.add_argument("--radius", type=float, default=50, help="Miles around --near.")
+    tune_cmd = sub.add_parser(
+        "eval-embeddings", help="recall@5 and MRR of campground search on held-out queries."
+    )
+    tune_cmd.add_argument("--campgrounds", default="data/campgrounds.jsonl")
     stops_cmd = sub.add_parser("pitstops", help="Stops worth making along a route, per day.")
     stops_cmd.add_argument("points", nargs="+", metavar="LAT,LON")
     stops_cmd.add_argument("--interests", default="", help="e.g. nature=0.9,museums=0.2")
@@ -45,23 +50,34 @@ def main(argv: list[str] | None = None) -> int:
 
         print(asyncio.run(plan(args.request)))
         return 0
-    if args.command == "parse":
-        from dave.config import load_settings
-        from dave.parser import parse_request
-
-        result = parse_request(args.request, cache_dir=load_settings().cache_dir)
-        print(result.question or result.spec.model_dump_json(indent=2))
-        return 0
-    if args.command == "eval-parser":
+    if args.command in {"parse", "eval-parser", "compare-parsers"}:
         from dave import parser_eval
         from dave.config import load_settings
+        from dave.http import CachedClient
         from dave.parser import parse_request
+        from dave.small_parser import compare, demo_requests, small_parser
 
-        cache_dir = load_settings().cache_dir
-        report = parser_eval.evaluate(
-            lambda text: parse_request(text, today=parser_eval.TODAY, cache_dir=cache_dir),
-            parser_eval.load_cases(),
-        )
+        settings = load_settings()
+        cache_dir = settings.cache_dir
+        with CachedClient(cache_dir / "http", offline=settings.offline) as http:
+            small = small_parser(settings, http)
+            if args.command == "parse":
+                result = parse_request(args.request, small=small, cache_dir=cache_dir)
+                print(result.question or result.spec.model_dump_json(indent=2))
+                return 0
+            if args.command == "compare-parsers":
+                if small is None:
+                    print("Set DAVE_PARSER_URL to the fine-tuned parser's server first.")
+                    return 2
+                rows = compare(demo_requests(), small, today=parser_eval.TODAY, cache_dir=cache_dir)
+                print(json.dumps(rows, indent=2))
+                return 0
+            report = parser_eval.evaluate(
+                lambda text: parse_request(
+                    text, today=parser_eval.TODAY, small=small, cache_dir=cache_dir
+                ),
+                parser_eval.load_cases(),
+            )
         print(json.dumps(report, indent=2))
         return 0 if report["accuracy"] >= parser_eval.TARGET else 1
     if args.command == "route":
@@ -106,6 +122,20 @@ def main(argv: list[str] | None = None) -> int:
             f"{len(found)} campgrounds ({hookups} with hookups, {lengths} with RV length) -> {out}"
         )
         return 0
+    if args.command == "eval-embeddings":
+        from pathlib import Path
+
+        from dave.config import load_settings
+        from dave.embed_tune import evaluate
+        from dave.models import Campground
+        from dave.store.vectors import FastEmbedder
+
+        settings = load_settings()
+        lines = Path(args.campgrounds).read_text().splitlines()
+        camps = [Campground.model_validate_json(line) for line in lines]
+        embedder = FastEmbedder(settings.cache_dir / "models", settings.embed_model)
+        print(json.dumps(evaluate(embedder, camps), indent=2))
+        return 0
     if args.command in {"index-campgrounds", "find-campgrounds"}:
         from pathlib import Path
 
@@ -114,7 +144,8 @@ def main(argv: list[str] | None = None) -> int:
         from dave.store.vectors import INDEX_PATH, CampgroundIndex, FastEmbedder
 
         settings = load_settings()
-        index = CampgroundIndex(INDEX_PATH, FastEmbedder(settings.cache_dir / "models"))
+        embedder = FastEmbedder(settings.cache_dir / "models", settings.embed_model)
+        index = CampgroundIndex(INDEX_PATH, embedder)
         if args.command == "index-campgrounds":
             lines = Path(args.source).read_text().splitlines()
             count = index.build(Campground.model_validate_json(line) for line in lines)
