@@ -31,6 +31,10 @@ def main(argv: list[str] | None = None) -> int:
     find_cmd.add_argument("--length", type=float, help="RV length in feet, tow vehicle included")
     find_cmd.add_argument("--near", metavar="LAT,LON")
     find_cmd.add_argument("--radius", type=float, default=50, help="Miles around --near.")
+    tune_cmd = sub.add_parser(
+        "eval-embeddings", help="recall@5 and MRR of campground search on held-out queries."
+    )
+    tune_cmd.add_argument("--campgrounds", default="data/campgrounds.jsonl")
     stops_cmd = sub.add_parser("pitstops", help="Stops worth making along a route, per day.")
     stops_cmd.add_argument("points", nargs="+", metavar="LAT,LON")
     stops_cmd.add_argument("--interests", default="", help="e.g. nature=0.9,museums=0.2")
@@ -106,6 +110,20 @@ def main(argv: list[str] | None = None) -> int:
             f"{len(found)} campgrounds ({hookups} with hookups, {lengths} with RV length) -> {out}"
         )
         return 0
+    if args.command == "eval-embeddings":
+        from pathlib import Path
+
+        from dave.config import load_settings
+        from dave.embed_tune import evaluate
+        from dave.models import Campground
+        from dave.store.vectors import FastEmbedder
+
+        settings = load_settings()
+        lines = Path(args.campgrounds).read_text().splitlines()
+        camps = [Campground.model_validate_json(line) for line in lines]
+        embedder = FastEmbedder(settings.cache_dir / "models", settings.embed_model)
+        print(json.dumps(evaluate(embedder, camps), indent=2))
+        return 0
     if args.command in {"index-campgrounds", "find-campgrounds"}:
         from pathlib import Path
 
@@ -114,7 +132,8 @@ def main(argv: list[str] | None = None) -> int:
         from dave.store.vectors import INDEX_PATH, CampgroundIndex, FastEmbedder
 
         settings = load_settings()
-        index = CampgroundIndex(INDEX_PATH, FastEmbedder(settings.cache_dir / "models"))
+        embedder = FastEmbedder(settings.cache_dir / "models", settings.embed_model)
+        index = CampgroundIndex(INDEX_PATH, embedder)
         if args.command == "index-campgrounds":
             lines = Path(args.source).read_text().splitlines()
             count = index.build(Campground.model_validate_json(line) for line in lines)
