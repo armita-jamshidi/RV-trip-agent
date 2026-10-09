@@ -130,7 +130,9 @@ def test_cli_indexes_and_searches(tmp_path, monkeypatch, capsys):
     from dave import cli
     from dave.store import vectors
 
-    monkeypatch.setattr(vectors, "FastEmbedder", lambda cache_dir: ConceptEmbedder())
+    monkeypatch.setattr(
+        vectors, "FastEmbedder", lambda cache_dir, model_path=None: ConceptEmbedder()
+    )
     monkeypatch.setattr(vectors, "INDEX_PATH", tmp_path / "camps.lance")
     source = tmp_path / "camps.jsonl"
     source.write_text("".join(c.model_dump_json() + "\n" for c in CAMPS))

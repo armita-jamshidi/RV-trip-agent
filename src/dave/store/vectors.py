@@ -28,14 +28,34 @@ class Embedder(Protocol):
 
 
 class FastEmbedder:
-    """Open bge-small model run locally on CPU (ONNX via fastembed). Downloads once, then cached."""
+    """Open bge-small model run locally on CPU (ONNX via fastembed). Downloads once, then cached.
+
+    `model_path` loads a fine-tuned copy instead (an ONNX export of bge-small, see T30). Build and
+    search the index with the same model: their vectors aren't comparable.
+    """
 
     MODEL = "BAAI/bge-small-en-v1.5"
+    TUNED = "dave/campgrounds-bge-small"
 
-    def __init__(self, cache_dir: Path | str, model: str = MODEL) -> None:
+    def __init__(self, cache_dir: Path | str, model_path: Path | None = None) -> None:
         from fastembed import TextEmbedding  # slow import; only when actually embedding
 
-        self._model = TextEmbedding(model, cache_dir=str(cache_dir))
+        if model_path is None:
+            self._model = TextEmbedding(self.MODEL, cache_dir=str(cache_dir))
+            return
+        from fastembed.common.model_description import ModelSource, PoolingType
+
+        if self.TUNED not in {m["model"] for m in TextEmbedding.list_supported_models()}:
+            TextEmbedding.add_custom_model(
+                model=self.TUNED,
+                pooling=PoolingType.CLS,  # as bge-small
+                normalization=True,
+                sources=ModelSource(hf=self.MODEL),  # never fetched: the files are local
+                dim=384,
+            )
+        self._model = TextEmbedding(
+            self.TUNED, cache_dir=str(cache_dir), specific_model_path=str(model_path)
+        )
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         return [v.tolist() for v in self._model.embed(texts)]
