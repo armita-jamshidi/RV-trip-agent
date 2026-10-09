@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 import json
+from datetime import date
 
 from dave import __version__
 
@@ -37,6 +38,11 @@ def main(argv: list[str] | None = None) -> int:
     stops_cmd.add_argument("--rv-length", type=float, help="RV length in feet, tow included")
     scenic_cmd = sub.add_parser("eval-scenic", help="Score scenic ranking on labeled campgrounds.")
     scenic_cmd.add_argument("--campgrounds", default="data/campgrounds.jsonl")
+    sub.add_parser("gas-snapshot", help="Save this week's EIA gas and diesel averages.")
+    gas_cmd = sub.add_parser("gas-price", help="Average gas price for a state, from snapshots.")
+    gas_cmd.add_argument("state", help="Two-letter state code, e.g. UT")
+    gas_cmd.add_argument("--diesel", action="store_true")
+    gas_cmd.add_argument("--on", type=date.fromisoformat, help="Trip date, YYYY-MM-DD")
     args = parser.parse_args(argv)
 
     # Imports are deferred so --help stays fast.
@@ -178,6 +184,33 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(json.dumps(report, indent=2))
         return 0 if report["precision"] >= scenic.TARGET and not report["missing"] else 1
+    if args.command == "gas-snapshot":
+        from dave import gas_prices
+        from dave.config import load_settings
+        from dave.http import CachedClient
+
+        settings = load_settings()
+        with CachedClient(settings.cache_dir / "http", offline=settings.offline) as http:
+            saved = gas_prices.collect(http, settings.require("EIA_API_KEY"), today=date.today())
+        print(f"Saved {len(saved)} new or revised weeks to {gas_prices.STORE}")
+        print(json.dumps(gas_prices.coverage(gas_prices.load(gas_prices.STORE)), indent=2))
+        return 0
+    if args.command == "gas-price":
+        from dave import gas_prices
+        from dave.models import FuelType
+
+        fuel = FuelType.DIESEL if args.diesel else FuelType.GAS
+        found = gas_prices.price_for(
+            gas_prices.load(gas_prices.STORE), args.state, fuel, args.on or date.today()
+        )
+        if not found:
+            print("No snapshots yet; run `dave gas-snapshot` first.")
+            return 1
+        print(
+            f"${found.usd_per_gal:.3f}/gal {fuel} in {args.state.upper()}, estimated from the "
+            f"EIA {found.area_name} average (weeks through {found.period})"
+        )
+        return 0
     parser.print_help()
     return 0
 
