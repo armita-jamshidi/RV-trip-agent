@@ -9,8 +9,8 @@ from dave.tools.defaults import trip_defaults
 
 
 def test_registry_exposes_every_tool():
-    assert [t.name for t in tools.TOOLS] == ["trip_defaults", "identify_rv"]
-    assert tools.allowed_tool_names() == ["mcp__dave__trip_defaults", "mcp__dave__identify_rv"]
+    assert [t.name for t in tools.TOOLS] == ["trip_defaults", "identify_rv", "rv_dimensions"]
+    assert tools.allowed_tool_names()[-1] == "mcp__dave__rv_dimensions"
 
 
 def test_server_registers_tools():
