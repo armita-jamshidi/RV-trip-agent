@@ -16,6 +16,7 @@ def main(argv: list[str] | None = None) -> int:
     parse_cmd = sub.add_parser("parse", help="Turn a trip request into a constraint spec.")
     parse_cmd.add_argument("request")
     sub.add_parser("eval-parser", help="Score the request parser on evals/parser/cases.jsonl.")
+    sub.add_parser("compare-parsers", help="Demo trips parsed by Claude and the fine-tuned model.")
     route_cmd = sub.add_parser("route", help="RV route through points given as lat,lon.")
     route_cmd.add_argument("points", nargs="+", metavar="LAT,LON")
     camp_cmd = sub.add_parser("campgrounds", help="Ingest campgrounds around points.")
@@ -49,23 +50,34 @@ def main(argv: list[str] | None = None) -> int:
 
         print(asyncio.run(plan(args.request)))
         return 0
-    if args.command == "parse":
-        from dave.config import load_settings
-        from dave.parser import parse_request
-
-        result = parse_request(args.request, cache_dir=load_settings().cache_dir)
-        print(result.question or result.spec.model_dump_json(indent=2))
-        return 0
-    if args.command == "eval-parser":
+    if args.command in {"parse", "eval-parser", "compare-parsers"}:
         from dave import parser_eval
         from dave.config import load_settings
+        from dave.http import CachedClient
         from dave.parser import parse_request
+        from dave.small_parser import compare, demo_requests, small_parser
 
-        cache_dir = load_settings().cache_dir
-        report = parser_eval.evaluate(
-            lambda text: parse_request(text, today=parser_eval.TODAY, cache_dir=cache_dir),
-            parser_eval.load_cases(),
-        )
+        settings = load_settings()
+        cache_dir = settings.cache_dir
+        with CachedClient(cache_dir / "http", offline=settings.offline) as http:
+            small = small_parser(settings, http)
+            if args.command == "parse":
+                result = parse_request(args.request, small=small, cache_dir=cache_dir)
+                print(result.question or result.spec.model_dump_json(indent=2))
+                return 0
+            if args.command == "compare-parsers":
+                if small is None:
+                    print("Set DAVE_PARSER_URL to the fine-tuned parser's server first.")
+                    return 2
+                rows = compare(demo_requests(), small, today=parser_eval.TODAY, cache_dir=cache_dir)
+                print(json.dumps(rows, indent=2))
+                return 0
+            report = parser_eval.evaluate(
+                lambda text: parse_request(
+                    text, today=parser_eval.TODAY, small=small, cache_dir=cache_dir
+                ),
+                parser_eval.load_cases(),
+            )
         print(json.dumps(report, indent=2))
         return 0 if report["accuracy"] >= parser_eval.TARGET else 1
     if args.command == "route":

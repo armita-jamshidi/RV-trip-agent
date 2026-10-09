@@ -5,6 +5,8 @@ This is the baseline the fine-tuned parser (T29) must beat on `evals/parser/case
 
 import hashlib
 import json
+import logging
+from collections.abc import Callable
 from datetime import date
 from pathlib import Path
 
@@ -12,6 +14,8 @@ import anthropic
 from pydantic import BaseModel
 
 from dave.models import ConstraintSpec, Hookup, Interests, Model, RVRequest
+
+log = logging.getLogger(__name__)
 
 MODEL = "claude-opus-5-5"
 
@@ -67,6 +71,7 @@ class ParseResult(Model):
     spec: ConstraintSpec | None = None
     missing: list[str] = []
     question: str | None = None
+    parser: str = "claude"
 
 
 def missing_fields(x: Extracted) -> list[str]:
@@ -142,5 +147,19 @@ def extract(
     return extracted
 
 
-def parse_request(text: str, *, today: date | None = None, **kwargs) -> ParseResult:
-    return to_result(extract(text, today=today or date.today(), **kwargs))
+def parse_request(
+    text: str,
+    *,
+    today: date | None = None,
+    small: Callable[[str, date], Extracted | None] | None = None,
+    **kwargs,
+) -> ParseResult:
+    """Parse with the fine-tuned model when one is given (T31), falling back to Claude when it
+    returns nothing usable."""
+    today = today or date.today()
+    extracted = small(text, today) if small else None
+    if extracted is None:
+        if small:
+            log.info("Fine-tuned parser gave no valid answer; asking Claude.")
+        return to_result(extract(text, today=today, **kwargs))
+    return to_result(extracted).model_copy(update={"parser": "fine-tuned"})
