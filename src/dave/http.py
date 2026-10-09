@@ -56,8 +56,15 @@ class CachedClient:
         self._last_call: dict[str, float] = {}
         self._http = httpx.Client(timeout=timeout, transport=transport, follow_redirects=True)
 
-    def get(self, url: str, *, params: dict | None = None, headers: dict | None = None):
-        return self.request("GET", url, params=params, headers=headers)
+    def get(
+        self,
+        url: str,
+        *,
+        params: dict | None = None,
+        headers: dict | None = None,
+        secret_params: dict | None = None,
+    ):
+        return self.request("GET", url, params=params, headers=headers, secret_params=secret_params)
 
     def post(self, url: str, *, json_body: object = None, headers: dict | None = None):
         return self.request("POST", url, json_body=json_body, headers=headers)
@@ -70,10 +77,12 @@ class CachedClient:
         params: dict | None = None,
         json_body: object = None,
         headers: dict | None = None,
+        secret_params: dict | None = None,
     ) -> httpx.Response:
         """Return a cached response when present; otherwise fetch, cache 2xx and return.
 
-        Headers are not part of the cache key, so API keys sent in headers never affect it.
+        Headers and `secret_params` (API keys a source wants in the query string) are not part
+        of the cache key, so keys never affect it.
         """
         path = self.cache_dir / f"{cache_key(method, url, params, json_body)}.json"
         if path.exists():
@@ -81,7 +90,8 @@ class CachedClient:
         if self.offline:
             raise OfflineCacheMiss(f"No cached response for {method} {url} {params or ''}")
 
-        response = self._fetch(method, url, params=params, json=json_body, headers=headers)
+        query = {**(params or {}), **(secret_params or {})} or None
+        response = self._fetch(method, url, params=query, json=json_body, headers=headers)
         if response.is_success:
             _store(path, response)
         return response

@@ -167,6 +167,16 @@ class GasStation(Model):
     rv_accessible: bool | None = None
 
 
+class GasPrice(Model):
+    """A weekly average retail price for one area, as published by EIA. Never a station price."""
+
+    period: date = Field(description="EIA week, dated the Monday it was surveyed")
+    area: str = Field(description="EIA duoarea code: NUS, a region like R40, or a state like SCO")
+    area_name: str
+    fuel_type: FuelType
+    usd_per_gal: float = Field(gt=0)
+
+
 class CampSite(Model):
     """One bookable RV site. Hookups and length are only meaningful together, per site."""
 
