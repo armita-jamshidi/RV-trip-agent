@@ -20,6 +20,9 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("compare-parsers", help="Demo trips parsed by Claude and the fine-tuned model.")
     route_cmd = sub.add_parser("route", help="RV route through points given as lat,lon.")
     route_cmd.add_argument("points", nargs="+", metavar="LAT,LON")
+    route_cmd.add_argument(
+        "--rv-height", type=float, help="Feet; checks bridges and reroutes (start and end only)"
+    )
     camp_cmd = sub.add_parser("campgrounds", help="Ingest campgrounds around points.")
     camp_cmd.add_argument("points", nargs="*", metavar="LAT,LON")
     camp_cmd.add_argument("--demo", action="store_true", help="Use the demo/regions.json areas.")
@@ -101,7 +104,19 @@ def main(argv: list[str] | None = None) -> int:
         settings = load_settings()
         places = [Place(name=p, lat=p.split(",")[0], lon=p.split(",")[1]) for p in args.points]
         with CachedClient(settings.cache_dir / "http", offline=settings.offline) as http:
-            r = route(places, http)
+            if args.rv_height is None:
+                r = route(places, http)
+            else:
+                from dave.clearance import clear_route
+
+                if len(places) != 2:
+                    parser.error("--rv-height takes a start and an end point only")
+                checked = clear_route(places[0], places[1], args.rv_height, http)
+                r = checked.route
+                if checked.rerouted:
+                    print("Rerouted around a low bridge.")
+                for line in checked.warnings() + checked.notes():
+                    print(line)
         print(f"{r.miles:.0f} miles, {r.car_hours:.1f} h by car, {r.drive_hours:.1f} h by RV")
         return 0
     if args.command == "campgrounds":

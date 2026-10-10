@@ -20,29 +20,43 @@ def route(
     speed_factor: float = RV_SPEED_FACTOR,
 ) -> Route:
     """Driving route through `points` in order (origin, waypoints..., destination)."""
+    return routes(points, http, base_url=base_url, speed_factor=speed_factor)[0]
+
+
+def routes(
+    points: list[Place],
+    http: CachedClient,
+    *,
+    alternatives: bool = False,
+    base_url: str = OSRM_URL,
+    speed_factor: float = RV_SPEED_FACTOR,
+) -> list[Route]:
+    """The best route, then OSRM's alternatives when asked (only for two points), fastest first."""
     if len(points) < 2:
         raise ValueError("A route needs at least an origin and a destination.")
     coords = ";".join(f"{p.lon},{p.lat}" for p in points)
-    response = http.get(
-        f"{base_url}/route/v1/driving/{coords}",
-        params={"overview": "full", "geometries": "geojson", "steps": "false"},
-    )
+    params = {"overview": "full", "geometries": "geojson", "steps": "false"}
+    if alternatives and len(points) == 2:
+        params["alternatives"] = "3"
+    response = http.get(f"{base_url}/route/v1/driving/{coords}", params=params)
     data = response.json()
     if not response.is_success or data.get("code") != "Ok" or not data.get("routes"):
         names = " → ".join(p.name for p in points)
         raise RoutingError(f"No route for {names}: {data.get('message') or data.get('code')}")
+    return [_route(r, speed_factor) for r in data["routes"]]
 
-    best = data["routes"][0]
+
+def _route(r: dict, speed_factor: float) -> Route:
     return Route(
-        miles=best["distance"] / METERS_PER_MILE,
-        car_hours=best["duration"] / 3600,
-        drive_hours=best["duration"] / 3600 * speed_factor,
+        miles=r["distance"] / METERS_PER_MILE,
+        car_hours=r["duration"] / 3600,
+        drive_hours=r["duration"] / 3600 * speed_factor,
         legs=[
             RouteLeg(
                 miles=leg["distance"] / METERS_PER_MILE,
                 drive_hours=leg["duration"] / 3600 * speed_factor,
             )
-            for leg in best["legs"]
+            for leg in r["legs"]
         ],
-        geometry=[(lat, lon) for lon, lat in best["geometry"]["coordinates"]],
+        geometry=[(lat, lon) for lon, lat in r["geometry"]["coordinates"]],
     )

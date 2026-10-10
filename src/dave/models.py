@@ -156,6 +156,9 @@ class Restaurant(Model):
     rating: float | None = Field(default=None, ge=0, le=10)
     cuisine: str | None = None
     price_level: int | None = Field(default=None, ge=1, le=4)
+    meal: str | None = Field(default=None, description="lunch or dinner")
+    detour_minutes: float = Field(default=0, ge=0)
+    rv_parking_note: str | None = None
 
 
 class GasStation(Model):
