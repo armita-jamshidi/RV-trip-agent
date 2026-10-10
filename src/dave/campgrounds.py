@@ -26,7 +26,7 @@ RIDB_PAGE = 50
 RECREATION_GOV_BOOKING = "https://www.recreation.gov/camping/campgrounds/{}"
 
 FSQ_CAMPING = ("4bf58dd8d48988d1e4941735", "52f2ab2ebcbc57f1066b8b53")  # Campground, RV Park
-FSQ_FIELDS = "fsq_place_id,name,latitude,longitude,location,website"
+FSQ_FIELDS = "fsq_place_id,name,latitude,longitude,location,website,tel"
 
 SAME_PLACE_MILES = 0.5
 SAME_SPOT_MILES = 0.1  # this close, names need not match
@@ -73,6 +73,7 @@ def ridb_campground(facility: dict, sites: list[CampSite]) -> Campground:
         sites=sites,
         nightly_price_usd=_lowest_dollars(facility.get("FacilityUseFeeDescription") or ""),
         booking_url=RECREATION_GOV_BOOKING.format(fid) if facility.get("Reservable") else None,
+        phone=facility.get("FacilityPhone") or None,
         source="ridb",
     )
 
@@ -108,6 +109,7 @@ def parse_site(raw: dict) -> CampSite | None:
 
     return CampSite(
         name=str(raw.get("CampsiteName") or raw.get("CampsiteID")),
+        site_id=str(raw["CampsiteID"]) if raw.get("CampsiteID") else None,
         hookups=hookups,
         max_rv_length_ft=max(lengths, default=None),
         electrical_amps=amps,
@@ -155,6 +157,7 @@ def foursquare_campground(place: dict) -> Campground:
             address=(place.get("location") or {}).get("formatted_address"),
         ),
         booking_url=place.get("website"),
+        phone=place.get("tel"),
         source="foursquare",
     )
 

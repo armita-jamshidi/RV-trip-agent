@@ -72,12 +72,15 @@ def test_ridb_keeps_campgrounds_with_rv_sites_and_their_hookups(tmp_path):
     assert devils.description.startswith("Overview Devils Garden sits among red rock fins")
     assert "desert views & trailheads" in devils.description
     assert devils.booking_url == "https://www.recreation.gov/camping/campgrounds/251535"
+    assert devils.phone == "435-719-2299"
+    assert [s.site_id for s in devils.sites] == ["1", "2"]
     assert devils.source == "ridb"
 
     kens = found["Ken's Lake Campground"]
     assert kens.hookups == set(Hookup)  # "Full Hookup"
     assert kens.max_rv_length_ft == 45  # from the attribute when equipment has no length
     assert kens.booking_url is None  # first come, first served
+    assert kens.phone is None
 
 
 def test_ridb_sends_key_as_header_and_search_area(tmp_path):
@@ -129,6 +132,7 @@ def test_foursquare_rv_parks_with_free_fields_only(tmp_path):
     gateway = by_name(found)["Sun Outdoors Arches Gateway"]
     assert gateway.location.address == "1621 N Hwy 191, Moab, UT 84532"
     assert gateway.source == "foursquare" and gateway.rating is None and not gateway.hookups
+    assert gateway.phone == "(435) 259-6682"
 
     request = server.requests[0]
     assert request.headers["Authorization"] == "Bearer fsq-key"
