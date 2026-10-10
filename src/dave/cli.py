@@ -20,6 +20,9 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("compare-parsers", help="Demo trips parsed by Claude and the fine-tuned model.")
     route_cmd = sub.add_parser("route", help="RV route through points given as lat,lon.")
     route_cmd.add_argument("points", nargs="+", metavar="LAT,LON")
+    route_cmd.add_argument(
+        "--rv-height", type=float, help="Feet; checks bridges and reroutes (start and end only)"
+    )
     camp_cmd = sub.add_parser("campgrounds", help="Ingest campgrounds around points.")
     camp_cmd.add_argument("points", nargs="*", metavar="LAT,LON")
     camp_cmd.add_argument("--demo", action="store_true", help="Use the demo/regions.json areas.")
@@ -45,6 +48,10 @@ def main(argv: list[str] | None = None) -> int:
     rv_cmd.add_argument("description", help='e.g. "2023 Winnebago Minnie Winnie 31K"')
     scenic_cmd = sub.add_parser("eval-scenic", help="Score scenic ranking on labeled campgrounds.")
     scenic_cmd.add_argument("--campgrounds", default="data/campgrounds.jsonl")
+    fuel_cmd = sub.add_parser("fuel", help="Fuel cost per day for an RV on a route.")
+    fuel_cmd.add_argument("rv", help='e.g. "2023 Winnebago Minnie Winnie 31K"')
+    fuel_cmd.add_argument("points", nargs="+", metavar="LAT,LON")
+    fuel_cmd.add_argument("--on", type=date.fromisoformat, help="First travel day, YYYY-MM-DD")
     sub.add_parser("gas-snapshot", help="Save this week's EIA gas and diesel averages.")
     gas_cmd = sub.add_parser("gas-price", help="Average gas price for a state, from snapshots.")
     gas_cmd.add_argument("state", help="Two-letter state code, e.g. UT")
@@ -97,7 +104,19 @@ def main(argv: list[str] | None = None) -> int:
         settings = load_settings()
         places = [Place(name=p, lat=p.split(",")[0], lon=p.split(",")[1]) for p in args.points]
         with CachedClient(settings.cache_dir / "http", offline=settings.offline) as http:
-            r = route(places, http)
+            if args.rv_height is None:
+                r = route(places, http)
+            else:
+                from dave.clearance import clear_route
+
+                if len(places) != 2:
+                    parser.error("--rv-height takes a start and an end point only")
+                checked = clear_route(places[0], places[1], args.rv_height, http)
+                r = checked.route
+                if checked.rerouted:
+                    print("Rerouted around a low bridge.")
+                for line in checked.warnings() + checked.notes():
+                    print(line)
         print(f"{r.miles:.0f} miles, {r.car_hours:.1f} h by car, {r.drive_hours:.1f} h by RV")
         return 0
     if args.command == "campgrounds":
@@ -223,6 +242,34 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(json.dumps(report, indent=2))
         return 0 if report["precision"] >= scenic.TARGET and not report["missing"] else 1
+    if args.command == "fuel":
+        from dave import gas_prices
+        from dave.config import load_settings
+        from dave.days import split_days
+        from dave.fuel_cost import estimate_fuel
+        from dave.http import CachedClient
+        from dave.models import Place
+        from dave.routing import route
+        from dave.rv_catalog import identify_rv
+        from dave.rv_specs import lookup_rv
+
+        settings = load_settings()
+        found = identify_rv(args.rv)
+        if found.match is None or found.match.rv_class is None:
+            parser.error(f"name one RV, with its class if unusual: {args.rv!r} is ambiguous")
+        places = [Place(name=p, lat=p.split(",")[0], lon=p.split(",")[1]) for p in args.points]
+        with CachedClient(settings.cache_dir / "http", offline=settings.offline) as http:
+            rv = lookup_rv(found.match, http)
+            days = split_days(route(places, http), places[0], places[-1], start_date=args.on)
+        try:
+            estimate = estimate_fuel(
+                days, rv, gas_prices.load(gas_prices.STORE), today=date.today()
+            )
+        except ValueError as e:
+            print(e)
+            return 1
+        print("\n".join(estimate.summary()))
+        return 0
     if args.command == "gas-snapshot":
         from dave import gas_prices
         from dave.config import load_settings
