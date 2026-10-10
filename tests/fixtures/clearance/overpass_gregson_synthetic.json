@@ -1,0 +1,47 @@
+{
+ "_note": "Synthetic: shaped like Overpass `out tags geom` output near the 11foot8 bridge. Gregson St under the trestle is tagged 12'4\" (raised in 2019); West Peabody St crosses the route at one node with a lower limit that must not count.",
+ "elements": [
+  {
+   "type": "way",
+   "id": 101,
+   "tags": {
+    "highway": "secondary",
+    "name": "South Gregson Street",
+    "maxheight": "12'4\""
+   },
+   "geometry": [
+    {
+     "lat": 35.9975,
+     "lon": -78.906
+    },
+    {
+     "lat": 35.9968,
+     "lon": -78.906
+    }
+   ]
+  },
+  {
+   "type": "way",
+   "id": 102,
+   "tags": {
+    "highway": "residential",
+    "name": "West Peabody Street",
+    "maxheight": "3.0"
+   },
+   "geometry": [
+    {
+     "lat": 35.9971,
+     "lon": -78.9085
+    },
+    {
+     "lat": 35.99715,
+     "lon": -78.906
+    },
+    {
+     "lat": 35.9972,
+     "lon": -78.9035
+    }
+   ]
+  }
+ ]
+}

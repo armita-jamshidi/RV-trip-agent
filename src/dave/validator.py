@@ -7,7 +7,8 @@ with an unchecked bridge, is not assumed to fit (context/domain.md).
 """
 
 from dave.booking import terms_digest
-from dave.models import BookingStatus, Campground, CampSite, Itinerary, RVProfile
+from dave.models import BookingStatus, Campground, Itinerary, RVProfile
+from dave.site_fit import Fit, check_campground
 
 EPSILON = 1e-6  # rounding slack on hours and dollars
 
@@ -46,31 +47,10 @@ def validate_itinerary(itinerary: Itinerary) -> list[str]:
 
 
 def _site_problem(campground: Campground, rv: RVProfile, itinerary: Itinerary) -> str | None:
-    """Why no site here fits the RV, or None when one does."""
-    sites = campground.sites or [
-        CampSite(
-            name=campground.name,
-            hookups=campground.hookups,
-            max_rv_length_ft=campground.max_rv_length_ft,
-            electrical_amps=campground.electrical_amps,
-        )
-    ]
-    needed = itinerary.spec.hookups_required
-    length = rv.total_length_ft
-    problems = []
-    for site in sites:
-        if missing := needed - site.hookups:
-            problems.append(f"no {', '.join(sorted(missing))} hookup")
-        elif site.max_rv_length_ft is None:
-            problems.append("site length unknown")
-        elif site.max_rv_length_ft < length:
-            problems.append(f"sites fit {site.max_rv_length_ft:g} ft, the RV is {length:g} ft")
-        elif (
-            rv.electrical_amps
-            and site.electrical_amps
-            and (rv.electrical_amps not in site.electrical_amps)
-        ):
-            problems.append(f"no {rv.electrical_amps}A power")
-        else:
-            return None
-    return "no site fits: " + "; ".join(dict.fromkeys(problems)) + "."
+    """Why no site here is known to fit the RV, or None when one does."""
+    result = check_campground(campground, rv, itinerary.spec.hookups_required)
+    if result.fit is Fit.YES:
+        return None
+    if result.fit is Fit.CONFIRM:
+        return f"{result.reason} before counting on it."
+    return f"{result.reason}."
