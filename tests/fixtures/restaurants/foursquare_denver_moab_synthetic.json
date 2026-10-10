@@ -1,0 +1,140 @@
+{
+ "_note": "Synthetic: hand-written in the documented Foursquare Places API /places/search format (free fields only, so no rating or price). Names are made up; places sit near demo trip 1's lunch stops and campgrounds.",
+ "results": [
+  {
+   "fsq_place_id": "a1",
+   "name": "Gore Creek Grill",
+   "latitude": 39.64,
+   "longitude": -106.374,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "American Restaurant"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "a2",
+   "name": "Vail Taqueria",
+   "latitude": 39.642,
+   "longitude": -106.38,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "Mexican Restaurant"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "a3",
+   "name": "Bridge Street Coffee",
+   "latitude": 39.641,
+   "longitude": -106.375,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "Coffee Shop"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "b1",
+   "name": "Rifle Creek Diner",
+   "latitude": 39.6,
+   "longitude": -107.72,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "Diner"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "b2",
+   "name": "River Bend Tacos",
+   "latitude": 39.55,
+   "longitude": -107.78,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "Mexican Restaurant"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "c1",
+   "name": "Loma Junction BBQ",
+   "latitude": 39.07,
+   "longitude": -108.92,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "BBQ Joint"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "c2",
+   "name": "Desert Pass Pizza",
+   "latitude": 39.1,
+   "longitude": -108.95,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "Pizza Place"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "d1",
+   "name": "Slickrock Burgers",
+   "latitude": 38.575,
+   "longitude": -109.55,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "Burger Joint"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "d2",
+   "name": "Arches Gateway Grill",
+   "latitude": 38.61,
+   "longitude": -109.6,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "American Restaurant"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  }
+ ]
+}
