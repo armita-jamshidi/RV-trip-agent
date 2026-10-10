@@ -116,7 +116,7 @@ def test_rv_longer_than_the_site_fails():
 
 def test_unknown_site_length_is_not_assumed_to_fit():
     (error,) = validate_itinerary(plan(days=[day(1, campground=campground(max_rv_length_ft=None))]))
-    assert error.endswith("no site fits: site length unknown.")
+    assert error.endswith("confirm room for 27.5 ft before counting on it.")
 
 
 def test_wrong_amperage_fails_only_when_both_are_known():
