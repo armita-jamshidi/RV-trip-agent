@@ -1,5 +1,7 @@
 # Decisions
 
+Entries up to 2026-10-10. New decisions go in `decisions/`, one file each (see `decisions/README.md`), so parallel branches don't conflict here.
+
 - 2026-10-08: Python + Claude Agent SDK.
 - 2026-10-08: Bookings need human approval per booking; no stored payment details.
 - 2026-10-08: Free data sources first (see data-sources.md).

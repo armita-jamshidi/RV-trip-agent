@@ -1,0 +1,2 @@
+# Old append-only logs: keep both sides instead of conflicting.
+context/decisions.md merge=union
