@@ -1,0 +1,80 @@
+{
+ "_note": "Synthetic: shaped like OSRM /route/v1/driving output for a short trip down Gregson St, Durham NC, under the Norfolk Southern trestle (the 11foot8 bridge), with one alternative around it on side streets.",
+ "code": "Ok",
+ "routes": [
+  {
+   "distance": 850,
+   "duration": 95,
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -78.9058,
+      36.001
+     ],
+     [
+      -78.9059,
+      35.999
+     ],
+     [
+      -78.906,
+      35.9975
+     ],
+     [
+      -78.906,
+      35.9968
+     ],
+     [
+      -78.9061,
+      35.995
+     ],
+     [
+      -78.9062,
+      35.9935
+     ]
+    ]
+   },
+   "legs": [
+    {
+     "distance": 850,
+     "duration": 95
+    }
+   ]
+  },
+  {
+   "distance": 1500,
+   "duration": 210,
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -78.9058,
+      36.001
+     ],
+     [
+      -78.901,
+      36.001
+     ],
+     [
+      -78.901,
+      35.997
+     ],
+     [
+      -78.901,
+      35.9935
+     ],
+     [
+      -78.9062,
+      35.9935
+     ]
+    ]
+   },
+   "legs": [
+    {
+     "distance": 1500,
+     "duration": 210
+    }
+   ]
+  }
+ ]
+}
