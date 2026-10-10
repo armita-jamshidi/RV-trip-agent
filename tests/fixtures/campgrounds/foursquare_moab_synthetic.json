@@ -5,7 +5,8 @@
       "fsq_place_id": "fsq1", "name": "Sun Outdoors Arches Gateway",
       "latitude": 38.6248, "longitude": -109.6006,
       "location": {"formatted_address": "1621 N Hwy 191, Moab, UT 84532"},
-      "website": "https://www.sunoutdoors.com/utah/sun-outdoors-arches-gateway"
+      "website": "https://www.sunoutdoors.com/utah/sun-outdoors-arches-gateway",
+      "tel": "(435) 259-6682"
     },
     {
       "fsq_place_id": "fsq2", "name": "Devils Garden Campground",
