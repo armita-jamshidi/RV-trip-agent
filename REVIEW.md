@@ -16,7 +16,7 @@ Used by Dave before opening a PR and by Armita when reviewing one.
 - [ ] New tools have tests with recorded fixtures, no live network.
 - [ ] External calls go through the cached client.
 - [ ] Code is small and readable; no dead code or unused options.
-- [ ] Any new data source or paid service is recorded in `context/decisions.md`.
+- [ ] Any new data source or paid service is recorded as a new file in `context/decisions/` (not appended to `context/decisions.md`).
 
 ## Results
 - [ ] If the task affects plans, a demo trip from `demo/` was rerun and the output still makes sense.
