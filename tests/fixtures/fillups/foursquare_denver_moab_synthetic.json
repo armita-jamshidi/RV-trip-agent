@@ -1,0 +1,125 @@
+{
+ "_note": "Synthetic: hand-written in the documented Foursquare Places API /places/search format (free fields only). Stations are placed on the synthetic Denver to Moab route; chain names are used for their usual category, not as real locations.",
+ "results": [
+  {
+   "fsq_place_id": "s1",
+   "name": "Costco Gasoline",
+   "latitude": 39.7493,
+   "longitude": -105.0164,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "Gas Station"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "s2",
+   "name": "Love's Travel Stop",
+   "latitude": 39.7496,
+   "longitude": -105.0687,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "Truck Stop"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "s3",
+   "name": "Shell",
+   "latitude": 39.701,
+   "longitude": -105.9435,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "Gas Station"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "s4",
+   "name": "Pilot Travel Center",
+   "latitude": 39.5114,
+   "longitude": -107.4476,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "Truck Stop"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "s5",
+   "name": "Love's Travel Stop",
+   "latitude": 39.1226,
+   "longitude": -108.4284,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "Truck Stop"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "s6",
+   "name": "Maverik",
+   "latitude": 39.0044,
+   "longitude": -109.3124,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "Gas Station"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "s7",
+   "name": "Flying J Travel Center",
+   "latitude": 38.6957,
+   "longitude": -109.6309,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "Truck Stop"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  },
+  {
+   "fsq_place_id": "s8",
+   "name": "Chevron",
+   "latitude": 38.602,
+   "longitude": -109.5633,
+   "categories": [
+    {
+     "fsq_category_id": "c",
+     "name": "Gas Station"
+    }
+   ],
+   "location": {
+    "formatted_address": "(synthetic)"
+   }
+  }
+ ]
+}
