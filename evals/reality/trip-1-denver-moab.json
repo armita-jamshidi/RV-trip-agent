@@ -1,0 +1,13 @@
+{
+  "trip": "trip-1-denver-moab",
+  "note": "Collected 2026-10-13. Drive times are OSRM car times (router.project-osrm.org, queried with the same start, waypoint and end points as Dave's itinerary) with no RV slowdown applied. Devils Garden comes from Recreation.gov's campground, campsite and rate data for facility 234059. Not collected, because the source is still unreachable from the build environment: Rifle Falls (Colorado Parks and Wildlife), state gas averages (EIA, AAA) and low clearances (Overpass answers 502).",
+  "drive": [
+    {"day": 1, "drive_hours": 3.77, "source": "OSRM", "checked": "2026-10-13"},
+    {"day": 2, "drive_hours": 3.86, "source": "OSRM", "checked": "2026-10-13"}
+  ],
+  "campgrounds": [
+    {"name": "Devils Garden Campground (Arches)", "hookups": [], "max_rv_length_ft": 40,
+     "nightly_price_usd": 25,
+     "source": "https://www.recreation.gov/camping/campgrounds/234059", "checked": "2026-10-13"}
+  ]
+}

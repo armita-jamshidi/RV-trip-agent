@@ -10,6 +10,12 @@ One JSON file per demo trip (`trip-1-denver-moab.json`, ...), in the `TripRefere
 - `low_clearances`: known low bridges and tunnels near the route (OpenStreetMap `maxheight`,
   state DOT lists).
 
-No files are here yet: the sources are blocked from the environment Dave is built in. Once they
-are collected, score the demo trips with `dave.evaluate.score_trip` and save the result of
-`render_scorecards` as `evals/scorecard.md`. Each gap it lists is a candidate Notion task.
+Collected so far: `trip-1-denver-moab.json` (OSRM drive times, Devils Garden from Recreation.gov).
+Trips 2 to 4 have no rendered itinerary to score yet. Still unreachable from the build environment:
+Colorado Parks and Wildlife, EIA and AAA gas averages, and Overpass (it answers 502). The proxy
+also refuses OSRM URLs with `;` between coordinates, so routes were queried with OSRM's
+`polyline(...)` form instead.
+
+`evals/scorecard.md` is the scored result. Refresh it after changing a reference or the planner
+with `DAVE_UPDATE_EVAL=1 uv run pytest tests/test_evaluate.py`. Each gap it lists is a candidate
+Notion task.

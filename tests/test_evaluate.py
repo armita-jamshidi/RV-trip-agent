@@ -1,3 +1,4 @@
+import os
 from datetime import date
 from pathlib import Path
 
@@ -62,3 +63,16 @@ def test_scorecard_markdown_lists_scores_and_gaps(tmp_path):
     assert "| trip-1-denver-moab | 9 | 5 | 56% |" in text
     assert "| **All** | 9 | 5 | 56% |" in text
     assert "- trip-1-denver-moab, price, Day 1: Rifle Falls: Dave $28, state park page $36" in text
+
+
+SCORECARD = Path(__file__).parents[1] / "evals" / "scorecard.md"
+
+
+def test_saved_scorecard_matches_the_real_references(tmp_path):
+    """evals/scorecard.md scores the demo trips; DAVE_UPDATE_EVAL=1 rewrites it."""
+    itinerary, _ = demo_1(tmp_path)
+    card = score_trip(itinerary, load_reference("trip-1-denver-moab"))
+    text = render_scorecards([card])
+    if os.environ.get("DAVE_UPDATE_EVAL"):
+        SCORECARD.write_text(text)
+    assert text == SCORECARD.read_text()
