@@ -10,11 +10,15 @@ One JSON file per demo trip (`trip-1-denver-moab.json`, ...), in the `TripRefere
 - `low_clearances`: known low bridges and tunnels near the route (OpenStreetMap `maxheight`,
   state DOT lists).
 
-Collected so far: `trip-1-denver-moab.json` (OSRM drive times, Devils Garden from Recreation.gov).
-Trips 2 to 4 have no rendered itinerary to score yet. Still unreachable from the build environment:
-Colorado Parks and Wildlife, EIA and AAA gas averages, and Overpass (it answers 502). The proxy
-also refuses OSRM URLs with `;` between coordinates, so routes were queried with OSRM's
-`polyline(...)` form instead.
+Collected so far: `trip-1-denver-moab.json` (OSRM drive times, Devils Garden from Recreation.gov,
+low clearances from Overpass). Trips 2 to 4 have no rendered itinerary to score yet: planning them
+needs RIDB (it answers 401, no key reaches the session) and Foursquare (refused). Also still
+unreachable: Colorado Parks and Wildlife, and EIA and AAA gas averages.
+
+Two quirks of the sources, as of 2026-10-13. The proxy refuses OSRM URLs with `;` between
+coordinates, so routes were queried with OSRM's `polyline(...)` form instead. Overpass answers 406
+to requests without a descriptive `User-Agent` (httpx's default is refused), and 502 or 504 to
+large queries when it is busy, so clearances were collected with small bounding boxes and retries.
 
 `evals/scorecard.md` is the scored result. Refresh it after changing a reference or the planner
 with `DAVE_UPDATE_EVAL=1 uv run pytest tests/test_evaluate.py`. Each gap it lists is a candidate

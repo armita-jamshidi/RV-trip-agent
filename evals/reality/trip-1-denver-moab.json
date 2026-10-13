@@ -1,13 +1,38 @@
 {
   "trip": "trip-1-denver-moab",
-  "note": "Collected 2026-10-13. Drive times are OSRM car times (router.project-osrm.org, queried with the same start, waypoint and end points as Dave's itinerary) with no RV slowdown applied. Devils Garden comes from Recreation.gov's campground, campsite and rate data for facility 234059. Not collected, because the source is still unreachable from the build environment: Rifle Falls (Colorado Parks and Wildlife), state gas averages (EIA, AAA) and low clearances (Overpass answers 502).",
+  "note": "Collected 2026-10-13. Drive times are OSRM car times (router.project-osrm.org, queried with the same start, waypoint and end points as Dave's itinerary) with no RV slowdown applied. Devils Garden comes from Recreation.gov's campground, campsite and rate data for facility 234059. Low clearances come from OpenStreetMap via Overpass: every way tagged maxheight in boxes along OSRM's Denver to Moab route, kept when two of its nodes lie within 25 m of the route and the limit is under 14 ft. Only the Eisenhower Tunnel qualifies, and the 11 ft RV clears it. Overpass was overloaded, so 4 of 68 query boxes (short stretches of I-70 in the foothills west of Golden and in Grand Junction, and the road into Arches) never answered. Not collected, because the source is still unreachable from the build environment: Rifle Falls (Colorado Parks and Wildlife) and state gas averages (EIA, AAA).",
   "drive": [
-    {"day": 1, "drive_hours": 3.77, "source": "OSRM", "checked": "2026-10-13"},
-    {"day": 2, "drive_hours": 3.86, "source": "OSRM", "checked": "2026-10-13"}
+    {
+      "day": 1,
+      "drive_hours": 3.77,
+      "source": "OSRM",
+      "checked": "2026-10-13"
+    },
+    {
+      "day": 2,
+      "drive_hours": 3.86,
+      "source": "OSRM",
+      "checked": "2026-10-13"
+    }
   ],
   "campgrounds": [
-    {"name": "Devils Garden Campground (Arches)", "hookups": [], "max_rv_length_ft": 40,
-     "nightly_price_usd": 25,
-     "source": "https://www.recreation.gov/camping/campgrounds/234059", "checked": "2026-10-13"}
+    {
+      "name": "Devils Garden Campground (Arches)",
+      "hookups": [],
+      "max_rv_length_ft": 40,
+      "nightly_price_usd": 25,
+      "source": "https://www.recreation.gov/camping/campgrounds/234059",
+      "checked": "2026-10-13"
+    }
+  ],
+  "low_clearances": [
+    {
+      "name": "Eisenhower Memorial Tunnel",
+      "lat": 39.6790752,
+      "lon": -105.905934,
+      "clearance_ft": 13.92,
+      "source": "https://www.openstreetmap.org/way/17025436",
+      "checked": "2026-10-13"
+    }
   ]
 }
