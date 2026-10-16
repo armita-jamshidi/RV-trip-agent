@@ -205,3 +205,10 @@ def test_unchecked_bridges_mark_the_plan_not_final_instead_of_crashing(tmp_path)
     assert "> **Not final: this plan breaks a rule.**" in text
     assert "> - Day 1: bridge heights weren't checked (Overpass answered 406)" in text
     assert "## Costs" in text and "## Bookings to approve" in text
+
+
+def test_dashboard_plans_with_the_same_pipeline(monkeypatch):
+    from dave.dashboard import agent_planner
+
+    monkeypatch.setattr("dave.parser.parse_request", lambda *a, **k: ParseResult(question="Q?"))
+    assert agent_planner("somewhere nice") == "Q?\n"

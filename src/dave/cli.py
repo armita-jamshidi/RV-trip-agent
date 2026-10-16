@@ -67,33 +67,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "plan":
         from pathlib import Path
 
-        from dave import gas_prices
-        from dave.config import load_settings
-        from dave.http import CachedClient
-        from dave.parser import parse_request
-        from dave.planner import Sources, plan_trip
-        from dave.small_parser import small_parser
-        from dave.store.vectors import FastEmbedder
+        from dave.planner import plan_request
 
-        settings = load_settings()
-        with CachedClient(settings.cache_dir / "http", offline=settings.offline) as http:
-            parsed = parse_request(
-                args.request, small=small_parser(settings, http), cache_dir=settings.cache_dir
-            )
-            if parsed.question:
-                print(parsed.question)
-                return 2
-            sources = Sources(
-                http=http,
-                embedder=FastEmbedder(settings.cache_dir / "models", settings.embed_model),
-                gas_prices=gas_prices.load(gas_prices.STORE),
-                ridb_key=settings.keys.get("RIDB_API_KEY"),
-                foursquare_key=settings.keys.get("FOURSQUARE_API_KEY"),
-            )
-            trip = plan_trip(args.request, parsed.spec, sources, today=date.today())
+        trip = plan_request(args.request)
         text = trip.markdown()
         print(text)
-        if args.out:
+        if args.out and trip.itinerary:
             Path(args.out).write_text(text, encoding="utf-8")
         if trip.question:
             return 2

@@ -66,6 +66,32 @@ class TripPlan:
         return render_markdown(self.itinerary, per_day=self.per_day, notes=self.notes)
 
 
+def plan_request(request: str, *, today: date | None = None) -> TripPlan:
+    """`dave plan` and the dashboard: parse the request, then plan it with the configured keys.
+    When the request is missing something essential, the plan is the question to ask."""
+    from dave import gas_prices
+    from dave.config import load_settings
+    from dave.parser import parse_request
+    from dave.small_parser import small_parser
+    from dave.store.vectors import FastEmbedder
+
+    settings = load_settings()
+    with CachedClient(settings.cache_dir / "http", offline=settings.offline) as http:
+        parsed = parse_request(
+            request, small=small_parser(settings, http), cache_dir=settings.cache_dir
+        )
+        if parsed.question:
+            return TripPlan(question=parsed.question)
+        sources = Sources(
+            http=http,
+            embedder=FastEmbedder(settings.cache_dir / "models", settings.embed_model),
+            gas_prices=gas_prices.load(gas_prices.STORE),
+            ridb_key=settings.keys.get("RIDB_API_KEY"),
+            foursquare_key=settings.keys.get("FOURSQUARE_API_KEY"),
+        )
+        return plan_trip(request, parsed.spec, sources, today=today or date.today())
+
+
 def plan_trip(request: str, spec: ConstraintSpec, sources: Sources, *, today: date) -> TripPlan:
     http, notes = sources.http, []
 
