@@ -54,3 +54,4 @@ Each line is one Notion task (board "RV Travel Agent"). Work top to bottom; a ta
 - T33 Itinerary output renderer
 - T34 Real-world evaluation harness
 - T35 Demo trips
+- T36 Trip dashboard
