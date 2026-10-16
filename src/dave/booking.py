@@ -47,14 +47,19 @@ def approve(
     )
 
 
-def book(proposal: BookingProposal, booker: Booker) -> BookingProposal:
-    """Book an approved proposal. Anything else raises before `booker` is called."""
+def require_approval(proposal: BookingProposal) -> None:
+    """Raise unless a person approved this proposal with exactly these terms."""
     if proposal.status is not BookingStatus.APPROVED:
         raise ApprovalRequired(f"{proposal.name}: {proposal.status}, not approved; nothing booked.")
     if proposal.approved_terms != terms_digest(proposal):
         raise ApprovalRequired(
             f"{proposal.name}: the terms changed after approval; ask again before booking."
         )
+
+
+def book(proposal: BookingProposal, booker: Booker) -> BookingProposal:
+    """Book an approved proposal. Anything else raises before `booker` is called."""
+    require_approval(proposal)
     confirmation = booker(proposal)
     return _with(proposal, status=BookingStatus.BOOKED, confirmation=confirmation)
 

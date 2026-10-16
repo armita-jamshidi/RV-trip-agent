@@ -8,3 +8,5 @@ Real-world scenarios used for demos and for the evaluation harness (T34).
 4. "Tiffin Allegro Red 38 KA towing a Jeep. Seattle to Yellowstone and back, 10 nights, national parks, $4,000."
 
 For each, the evaluation compares Dave's plan with reality: real drive times, real campground hookups and prices, real gas prices, and known low clearances.
+
+Rendered itineraries (T33): [`itinerary-1-denver-moab.md`](itinerary-1-denver-moab.md). It is built from hand-written fixtures until the routing and campground services are reachable; trips 2–4 need those live sources and are not rendered yet. After changing the planner or renderer, refresh it with `DAVE_UPDATE_DEMO=1 uv run pytest tests/test_render.py`.

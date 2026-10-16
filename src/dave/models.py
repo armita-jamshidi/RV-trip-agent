@@ -156,6 +156,9 @@ class Restaurant(Model):
     rating: float | None = Field(default=None, ge=0, le=10)
     cuisine: str | None = None
     price_level: int | None = Field(default=None, ge=1, le=4)
+    meal: str | None = Field(default=None, description="lunch or dinner")
+    detour_minutes: float = Field(default=0, ge=0)
+    rv_parking_note: str | None = None
 
 
 class GasStation(Model):
@@ -181,6 +184,7 @@ class CampSite(Model):
     """One bookable RV site. Hookups and length are only meaningful together, per site."""
 
     name: str
+    site_id: str | None = None  # the source's id, for a link straight to the site
     hookups: set[Hookup] = Field(default_factory=set)
     max_rv_length_ft: float | None = Field(default=None, gt=0)
     electrical_amps: set[int] = Field(default_factory=set)
@@ -199,6 +203,7 @@ class Campground(Model):
     nightly_price_usd: float | None = Field(default=None, ge=0)
     rating: float | None = Field(default=None, ge=0, le=10)
     booking_url: str | None = None
+    phone: str | None = None
     source: str
 
 
