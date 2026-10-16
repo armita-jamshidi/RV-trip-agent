@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 import json
+import sys
 from datetime import date
 
 from dave import __version__
@@ -71,9 +72,12 @@ def main(argv: list[str] | None = None) -> int:
 
         trip = plan_request(args.request)
         text = trip.markdown()
-        print(text)
         if args.out and trip.itinerary:
             Path(args.out).write_text(text, encoding="utf-8")
+        # Windows consoles default to a code page without the plan's emoji.
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(errors="replace")
+        print(text)
         if trip.question:
             return 2
         return 1 if trip.errors else 0

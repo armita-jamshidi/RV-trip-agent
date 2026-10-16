@@ -102,14 +102,14 @@ def _day(day: DayLeg, previous: Campground | None, nights: int) -> list[str]:
                 price = ""
             out.append(f"- {g.name}{price}")
     tonight = "Tonight" if nights <= 1 else f"Tonight and the next {nights - 1}"
-    out += ["", f"**{tonight}**", f"- {_campground(day)}"]
+    out += ["", f"**{tonight}**", f"- {_campground(day, home=nights == 0)}"]
     return out
 
 
-def _campground(day: DayLeg) -> str:
+def _campground(day: DayLeg, *, home: bool) -> str:
     camp = day.campground
     if camp is None:
-        return "Home."
+        return "Home." if home else "No campground found yet; see the notes above."
     hookups = camp.hookups or set().union(*(s.hookups for s in camp.sites))
     parts = [camp.name]
     if camp.nightly_price_usd is not None:

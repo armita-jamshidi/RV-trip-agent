@@ -26,3 +26,13 @@ def test_place_keeps_the_travelers_name_and_asks_politely(tmp_path):
 def test_unknown_place_says_what_to_give(tmp_path):
     with pytest.raises(PlaceNotFound, match="try a city and state"):
         geocode("Nowhereville", client(tmp_path, []))
+
+
+def test_a_bare_name_is_the_best_known_place_not_the_first_match(tmp_path):
+    found = [
+        {"lat": "45.96", "lon": "-108.28", "display_name": "Yellowstone County", "importance": 0.5},
+        {"lat": "44.60", "lon": "-110.55", "display_name": "Yellowstone National Park",
+         "importance": 0.8},
+    ]  # fmt: skip
+    place = geocode("Yellowstone", client(tmp_path, found))
+    assert (place.lat, place.lon) == (44.60, -110.55)

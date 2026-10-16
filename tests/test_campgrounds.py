@@ -12,6 +12,7 @@ from dave.campgrounds import (
     ingest,
     merge,
     parse_site,
+    ridb_campground,
     ridb_campgrounds,
 )
 from dave.http import CachedClient
@@ -204,3 +205,41 @@ def test_cli_needs_keys(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)  # no .env here
     with pytest.raises(Exception, match="RIDB_API_KEY is not set"):
         cli.main(["campgrounds", "--demo"])
+
+
+def test_walk_in_and_hiker_biker_sites_are_not_rv_sites():
+    rv = [{"EquipmentName": "RV", "MaxLength": 40}]
+    for kind in ("WALK TO", "HIKE TO", "STANDARD NONELECTRIC HIKER/BIKER", "BOAT IN"):
+        site = {"CampsiteName": "1", "CampsiteType": kind, "PERMITTEDEQUIPMENT": rv}
+        assert parse_site(site) is None, kind
+
+
+def test_hiker_biker_campgrounds_are_skipped(tmp_path):
+    def server(request):
+        if request.url.path.endswith("/facilities"):
+            name = "Swains Lock Hiker-Biker Campsite"
+            record = {
+                "FacilityID": "1",
+                "FacilityName": name,
+                "FacilityTypeDescription": "Campground",
+                "FacilityLatitude": 39.0,
+                "FacilityLongitude": -77.2,
+            }
+            return httpx.Response(
+                200,
+                json={
+                    "RECDATA": [record],
+                    "METADATA": {"RESULTS": {"CURRENT_COUNT": 1, "TOTAL_COUNT": 1}},
+                },
+            )
+        raise AssertionError("no campsites should be fetched")  # fmt: skip
+
+    assert ridb_campgrounds(MOAB, 25, client(tmp_path, server), "k") == []
+
+
+def test_tiny_fees_are_not_nightly_prices():
+    facility = {"FacilityID": "9", "FacilityName": "Trout Creek", "FacilityLatitude": 47.1,
+                "FacilityLongitude": -114.9}  # fmt: skip
+    priced = lambda fee: ridb_campground({**facility, "FacilityUseFeeDescription": fee}, [])  # noqa: E731
+    assert priced("$1.50 per person").nightly_price_usd is None
+    assert priced("Day use $1.50; camping $18 per night").nightly_price_usd == 18
