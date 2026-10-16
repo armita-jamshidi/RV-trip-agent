@@ -13,6 +13,8 @@ home starts after them. Whatever a missing key or source leaves out is said in t
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
+import httpx
+
 from dave.budget import DayCost, fit_budget
 from dave.campground_booking import campground_proposals
 from dave.campgrounds import ingest
@@ -22,12 +24,13 @@ from dave.days import split_days, stay_nights
 from dave.fillups import plan_fillups, stations_along
 from dave.fuel_cost import FuelEstimate, estimate_fuel, mpg
 from dave.geocode import geocode
-from dave.http import CachedClient
+from dave.http import CachedClient, SourceError
 from dave.models import ConstraintSpec, DayLeg, GasPrice, Itinerary
 from dave.overnight import overnight_centers, pick_campgrounds
 from dave.pitstops import find_pitstops
 from dave.render import render_markdown
 from dave.restaurants import plan_meals
+from dave.routing import route
 from dave.rv_catalog import identify_rv
 from dave.rv_specs import lookup_rv
 from dave.store.vectors import Embedder
@@ -84,9 +87,19 @@ def plan_trip(request: str, spec: ConstraintSpec, sources: Sources, *, today: da
     legs = [(origin, destination)] + ([(destination, origin)] if spec.round_trip else [])
     driven: list[list[DayLeg]] = []
     for start, end in legs:
-        checked = clear_route(start, end, rv.height_ft, http)
+        try:
+            checked = clear_route(start, end, rv.height_ft, http)
+        except (SourceError, httpx.TransportError) as e:
+            # Unknown clearances fail rather than pass: the plan shows, marked "Not final".
+            checked = ClearanceCheck(route([start, end], http))
+            unchecked = f"bridge heights weren't checked ({e}); rerun before driving this day."
+        else:
+            unchecked = None
         days = split_days(checked.route, start, end, max_hours=spec.max_drive_hours_per_day)
-        driven.append(_with_clearances(days, checked))
+        days = _with_clearances(days, checked)
+        if unchecked:
+            days = [d.model_copy(update={"clearance_warnings": [unchecked]}) for d in days]
+        driven.append(days)
         notes += checked.notes()
         if checked.rerouted:
             notes.append(f"{start.name} to {end.name} is rerouted around a low bridge.")

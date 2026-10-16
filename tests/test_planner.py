@@ -190,3 +190,18 @@ def test_cli_plan_asks_for_what_is_missing(monkeypatch, capsys):
 
 def _fake_trip(tmp_path):
     return plan_trip(REQUEST, SPEC, sources(tmp_path / "fake"), today=date(2026, 10, 16))
+
+
+class OverpassDown(World):
+    def __call__(self, request):
+        if request.url.host == "overpass-api.de":
+            return httpx.Response(406, text="Not Acceptable")
+        return super().__call__(request)
+
+
+def test_unchecked_bridges_mark_the_plan_not_final_instead_of_crashing(tmp_path):
+    trip = plan_trip(REQUEST, SPEC, sources(tmp_path, OverpassDown()), today=date(2026, 10, 16))
+    text = trip.markdown()
+    assert "> **Not final: this plan breaks a rule.**" in text
+    assert "> - Day 1: bridge heights weren't checked (Overpass answered 406)" in text
+    assert "## Costs" in text and "## Bookings to approve" in text

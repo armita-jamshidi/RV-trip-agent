@@ -1,14 +1,14 @@
 """Place names ("Moab, UT") to coordinates, from OpenStreetMap's Nominatim (free, no key).
 
-Nominatim asks for a descriptive User-Agent and at most one request a second. A plan looks up
-two places, and the cached client keeps repeat lookups off the network entirely.
+Nominatim asks for a descriptive User-Agent (the cached client sends one on every request) and
+at most one request a second. A plan looks up two places, and the cache keeps repeat lookups
+off the network entirely.
 """
 
 from dave.http import CachedClient, SourceError
 from dave.models import Place
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
-USER_AGENT = "dave-rv-trip-agent (https://github.com/armita-jamshidi/rv-trip-agent)"
 
 
 class PlaceNotFound(ValueError):
@@ -20,7 +20,6 @@ def geocode(name: str, http: CachedClient) -> Place:
     response = http.get(
         NOMINATIM_URL,
         params={"q": name, "countrycodes": "us", "format": "jsonv2", "limit": 1},
-        headers={"User-Agent": USER_AGENT},
     )
     if not response.is_success:
         raise SourceError(f"Nominatim returned {response.status_code} for {name!r}")

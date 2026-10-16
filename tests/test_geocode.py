@@ -1,8 +1,8 @@
 import httpx
 import pytest
 
-from dave.geocode import USER_AGENT, PlaceNotFound, geocode
-from dave.http import CachedClient
+from dave.geocode import PlaceNotFound, geocode
+from dave.http import USER_AGENT, CachedClient
 
 
 def client(tmp_path, body, seen=None):

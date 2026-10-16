@@ -15,6 +15,8 @@ from urllib.parse import urlsplit
 import httpx
 
 RETRY_STATUSES = {429, 500, 502, 503, 504}
+# Overpass and Nominatim refuse anonymous clients (httpx's default User-Agent gets a 406).
+USER_AGENT = "dave-rv-trip-agent/0.1 (+https://github.com/armita-jamshidi/rv-trip-agent)"
 
 
 class OfflineCacheMiss(RuntimeError):
@@ -54,7 +56,12 @@ class CachedClient:
         self.min_interval = min_interval
         self._sleep = sleep
         self._last_call: dict[str, float] = {}
-        self._http = httpx.Client(timeout=timeout, transport=transport, follow_redirects=True)
+        self._http = httpx.Client(
+            timeout=timeout,
+            transport=transport,
+            follow_redirects=True,
+            headers={"User-Agent": USER_AGENT},
+        )
 
     def get(
         self,
