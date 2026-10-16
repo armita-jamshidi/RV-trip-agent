@@ -16,7 +16,8 @@ cp .env.example .env        # then fill in the keys
 | `ANTHROPIC_API_KEY` | Reads the request | Nothing works (the parser needs it) |
 | `RIDB_API_KEY` | Federal campgrounds with hookups, site lengths and prices | No campgrounds; the plan is marked "Not final" |
 | `FOURSQUARE_API_KEY` | Stops, food, gas stations, private RV parks | Plan has drives, campgrounds and costs only |
-| `EIA_API_KEY` | Gas prices (`uv run dave gas-snapshot`, weekly) | Fuel is left out of the costs, with a note |
+| `EIA_API_KEY` | Gas prices (`uv run dave gas-snapshot`, weekly) | Fuel is left out of the costs, with a note, unless Google prices it |
+| `GOOGLE_PLACES_API_KEY` | Gas stations on the route with their posted prices (paid beyond Google's free allowance, capped per plan) | Stations from Foursquare, priced at EIA averages |
 
 Routing, bridge heights and place lookup use OpenStreetMap and need no key.
 

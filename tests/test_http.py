@@ -93,3 +93,11 @@ def test_rate_limit_waits_between_calls_to_same_host(tmp_path):
     http.close()
     assert len(waits) == 1
     assert 0 < waits[0] <= 1.0
+
+
+def test_uncached_calls_are_always_fetched_and_never_stored(tmp_path):
+    server = FakeServer()
+    with client(tmp_path, server) as http:
+        http.post("https://api.example.com/prices", json_body={"q": 1}, cache=False)
+        http.post("https://api.example.com/prices", json_body={"q": 1}, cache=False)
+    assert server.calls == 2 and not list(tmp_path.glob("*.json"))

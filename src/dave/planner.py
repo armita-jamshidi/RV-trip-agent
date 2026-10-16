@@ -6,6 +6,9 @@ RV size (T06, T07), a route the RV clears (T09, T10) cut into days of at most th
 the campgrounds and tickets (T25 to T27). The result renders with T33, which runs the
 validator, so a plan that breaks a rule is shown as "Not final" with what to fix.
 
+Gas stations and their posted prices come from Google Places when its key is set (T37), else
+from Foursquare, priced at EIA averages.
+
 Extra nights beyond the driving days are spent at the destination; on a round trip the drive
 home starts after them. Whatever a missing key or source leaves out is said in the notes.
 """
@@ -15,6 +18,7 @@ from datetime import date, timedelta
 
 import httpx
 
+from dave import google_places
 from dave.budget import DayCost, fit_budget
 from dave.campground_booking import campground_proposals
 from dave.campgrounds import ingest
@@ -25,7 +29,7 @@ from dave.fillups import plan_fillups, stations_along
 from dave.fuel_cost import FuelEstimate, estimate_fuel, mpg
 from dave.geocode import geocode
 from dave.http import CachedClient, SourceError
-from dave.models import ConstraintSpec, DayLeg, GasPrice, Itinerary
+from dave.models import ConstraintSpec, DayLeg, FuelType, GasPrice, GasStation, Itinerary
 from dave.overnight import overnight_centers, pick_campgrounds
 from dave.pitstops import find_pitstops
 from dave.render import render_markdown
@@ -47,6 +51,7 @@ class Sources:
     gas_prices: list[GasPrice]
     ridb_key: str | None
     foursquare_key: str | None = None
+    google_places_key: str | None = None
 
 
 @dataclass
@@ -88,6 +93,7 @@ def plan_request(request: str, *, today: date | None = None) -> TripPlan:
             gas_prices=gas_prices.load(gas_prices.STORE),
             ridb_key=settings.keys.get("RIDB_API_KEY"),
             foursquare_key=settings.keys.get("FOURSQUARE_API_KEY"),
+            google_places_key=settings.keys.get("GOOGLE_PLACES_API_KEY"),
         )
         return plan_trip(request, parsed.spec, sources, today=today or date.today())
 
@@ -156,6 +162,8 @@ def plan_trip(request: str, spec: ConstraintSpec, sources: Sources, *, today: da
             max_hours=spec.max_drive_hours_per_day,
         )
         days = plan_meals(days, http, sources.foursquare_key, rv_length_ft=rv.total_length_ft)
+    elif sources.google_places_key:
+        notes.append("No stops or food: they need a FOURSQUARE_API_KEY.")
     else:
         notes.append("No stops, food or gas stations: they need a FOURSQUARE_API_KEY.")
 
@@ -176,15 +184,14 @@ def plan_trip(request: str, spec: ConstraintSpec, sources: Sources, *, today: da
     )
     notes += [p.note for p in picks if p.pick is None]
 
+    stations, prices = _stations(days, rv.fuel_type, sources, notes, today)
     try:
-        fuel = estimate_fuel(days, rv, sources.gas_prices, today=today)
+        fuel = estimate_fuel(days, rv, prices, today=today)
     except ValueError as e:
         notes.append(f"{e} Fuel is left out of the costs.")
         fuel = FuelEstimate([], *mpg(rv), rv.fuel_type)
-    if sources.foursquare_key and fuel.days:
-        line = [p for d in days for p in d.geometry]
-        stations = stations_along(line, http, sources.foursquare_key, rv.fuel_type)
-        fills = plan_fillups(days, rv, stations, sources.gas_prices, today=today)
+    if stations and fuel.days:
+        fills = plan_fillups(days, rv, stations, prices, today=today)
         at = {d.day: [f.station for f in fills.stops if f.day == d.day] for d in days}
         days = [d.model_copy(update={"gas_stations": at[d.day]}) for d in days]
         notes += fills.warnings
@@ -209,6 +216,31 @@ def plan_trip(request: str, spec: ConstraintSpec, sources: Sources, *, today: da
         bookings=camp_bookings + budget.tickets,
     )
     return TripPlan(itinerary, budget.per_day, notes)
+
+
+def _stations(
+    days: list[DayLeg], fuel_type: FuelType, sources: Sources, notes: list[str], today: date
+) -> tuple[list[GasStation], list[GasPrice]]:
+    """Stations along the route, and the prices to plan with: EIA's averages, overridden by
+    the posted station prices Google has for the states the route crosses."""
+    line = [p for d in days for p in d.geometry]
+    if sources.google_places_key:
+        try:
+            stations = google_places.stations_along(
+                line, sources.http, sources.google_places_key, fuel_type, today=today
+            )
+        except (SourceError, httpx.TransportError) as e:
+            notes.append(f"No station prices ({e}); fuel uses EIA averages.")
+        else:
+            found = google_places.area_prices(stations, today=today)
+            if not found:
+                notes.append("Google Places had no recent prices on this route.")
+            return stations, google_places.with_station_prices(sources.gas_prices, found)
+    if sources.foursquare_key:
+        return stations_along(line, sources.http, sources.foursquare_key, fuel_type), (
+            sources.gas_prices
+        )
+    return [], sources.gas_prices
 
 
 def _with_clearances(days: list[DayLeg], checked: ClearanceCheck) -> list[DayLeg]:

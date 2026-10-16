@@ -94,7 +94,12 @@ def _day(day: DayLeg, previous: Campground | None, nights: int) -> list[str]:
     if day.gas_stations:
         out += ["", "**Gas**"]
         for g in day.gas_stations:
-            price = f" at ${g.price_per_gal:.2f}/gal" if g.price_per_gal else ""
+            if g.price_per_gal:
+                price = f", ${g.price_per_gal:.2f}/gal posted"
+            elif g.avg_price_60d:
+                price = f", about ${g.avg_price_60d:.2f}/gal (area average)"
+            else:
+                price = ""
             out.append(f"- {g.name}{price}")
     tonight = "Tonight" if nights <= 1 else f"Tonight and the next {nights - 1}"
     out += ["", f"**{tonight}**", f"- {_campground(day)}"]
@@ -133,7 +138,9 @@ def _costs(itinerary: Itinerary, per_day: list[DayCost] | None) -> list[str]:
         left = c.remaining_usd
         verdict = f"{_usd(left)} to spare" if left >= 0 else f"{_usd(-left)} over"
         out += ["", f"Budget {_usd(c.budget_usd)}: {verdict}."]
-    out += ["", "Fuel is an estimate from regional average prices."]
+    posted = any(g.price_per_gal for d in itinerary.days for g in d.gas_stations)
+    source = "posted station prices and area averages" if posted else "regional average prices"
+    out += ["", f"Fuel is an estimate from {source}."]
     return out
 
 

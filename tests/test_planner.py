@@ -7,6 +7,7 @@ from conftest import ConceptEmbedder
 from test_campgrounds import Sources as Campgrounds
 from test_gas_prices import EIA
 from test_gas_prices import client as eia_client
+from test_google_places import Google
 from test_overnight import OSRM
 
 from dave import cli, planner
@@ -69,6 +70,7 @@ class World:
 
     def __init__(self):
         self.camps = Campgrounds()
+        self.google = Google()
         self.hosts: list[str] = []
 
     def __call__(self, request: httpx.Request) -> httpx.Response:
@@ -85,6 +87,8 @@ class World:
             return httpx.Response(200, json=body)
         if host == "overpass-api.de":
             return httpx.Response(200, json={"elements": []})
+        if host == "places.googleapis.com":
+            return self.google(request)
         if host == "www.winnebago.com":
             return httpx.Response(200, text=MINNIE_PAGE)
         if request.url.path == "/api/v1/facilities" and float(params["latitude"]) > 39.2:
@@ -94,10 +98,10 @@ class World:
         return self.camps(request)
 
 
-def sources(tmp_path, world=None, *, ridb_key="r") -> Sources:
+def sources(tmp_path, world=None, *, ridb_key="r", eia=True, google=None) -> Sources:
     http = CachedClient(tmp_path / "http", transport=httpx.MockTransport(world or World()))
-    prices = fetch(eia_client(tmp_path / "eia", EIA()), "key", date(2026, 7, 1))
-    return Sources(http, ConceptEmbedder(), prices, ridb_key=ridb_key)
+    prices = fetch(eia_client(tmp_path / "eia", EIA()), "key", date(2026, 7, 1)) if eia else []
+    return Sources(http, ConceptEmbedder(), prices, ridb_key=ridb_key, google_places_key=google)
 
 
 def test_demo_trip_1_is_planned_end_to_end_and_valid(tmp_path):
@@ -212,3 +216,26 @@ def test_dashboard_plans_with_the_same_pipeline(monkeypatch):
 
     monkeypatch.setattr("dave.parser.parse_request", lambda *a, **k: ParseResult(question="Q?"))
     assert agent_planner("somewhere nice") == "Q?\n"
+
+
+def test_google_station_prices_price_the_fuel_and_the_fill_ups_without_eia(tmp_path):
+    world = World()
+    src = sources(tmp_path, world, eia=False, google="g")
+    trip = plan_trip(REQUEST, SPEC, src, today=date(2026, 10, 16))
+    text = trip.markdown()
+
+    assert trip.errors == [] and world.google.requests
+    assert trip.itinerary.costs.fuel_usd > 0
+    assert "No gas prices stored" not in text
+    assert "- No stops or food: they need a FOURSQUARE_API_KEY." in text
+    assert "**Gas**\n- Love's Travel Stop, about $" in text and "/gal (area average)" in text
+
+
+def test_a_google_error_is_a_note_not_a_crash(tmp_path):
+    world = World()
+    world.google = Google(403)
+    trip = plan_trip(REQUEST, SPEC, sources(tmp_path, world, google="g"), today=date(2026, 10, 16))
+    assert "No station prices (Google Places answered 403); fuel uses EIA averages." in (
+        trip.markdown()
+    )
+    assert trip.itinerary.costs.fuel_usd > 0

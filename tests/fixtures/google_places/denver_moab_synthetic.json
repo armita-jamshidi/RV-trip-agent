@@ -1,0 +1,274 @@
+{
+ "_comment": "Synthetic, shaped like Places API (New) searchNearby with fuelOptions: the Foursquare fixture's stations with made-up prices. Google's terms don't allow storing real prices.",
+ "places": [
+  {
+   "id": "synthetic-0",
+   "displayName": {
+    "text": "Costco Gasoline",
+    "languageCode": "en"
+   },
+   "formattedAddress": "(synthetic)",
+   "location": {
+    "latitude": 39.7493,
+    "longitude": -105.0164
+   },
+   "types": [
+    "gas_station"
+   ],
+   "fuelOptions": {
+    "fuelPrices": [
+     {
+      "type": "REGULAR_UNLEADED",
+      "price": {
+       "currencyCode": "USD",
+       "units": "2",
+       "nanos": 890000000
+      },
+      "updateTime": "2026-10-14T15:30:00Z"
+     },
+     {
+      "type": "DIESEL",
+      "price": {
+       "currencyCode": "USD",
+       "units": "3",
+       "nanos": 790000000
+      },
+      "updateTime": "2026-10-14T15:30:00Z"
+     }
+    ]
+   }
+  },
+  {
+   "id": "synthetic-1",
+   "displayName": {
+    "text": "Love's Travel Stop",
+    "languageCode": "en"
+   },
+   "formattedAddress": "(synthetic)",
+   "location": {
+    "latitude": 39.7496,
+    "longitude": -105.0687
+   },
+   "types": [
+    "gas_station",
+    "truck_stop"
+   ]
+  },
+  {
+   "id": "synthetic-2",
+   "displayName": {
+    "text": "Shell",
+    "languageCode": "en"
+   },
+   "formattedAddress": "(synthetic)",
+   "location": {
+    "latitude": 39.701,
+    "longitude": -105.9435
+   },
+   "types": [
+    "gas_station"
+   ],
+   "fuelOptions": {
+    "fuelPrices": [
+     {
+      "type": "REGULAR_UNLEADED",
+      "price": {
+       "currencyCode": "USD",
+       "units": "3",
+       "nanos": 290000000
+      },
+      "updateTime": "2026-10-14T15:30:00Z"
+     },
+     {
+      "type": "DIESEL",
+      "price": {
+       "currencyCode": "USD",
+       "units": "3",
+       "nanos": 790000000
+      },
+      "updateTime": "2026-10-14T15:30:00Z"
+     }
+    ]
+   }
+  },
+  {
+   "id": "synthetic-3",
+   "displayName": {
+    "text": "Pilot Travel Center",
+    "languageCode": "en"
+   },
+   "formattedAddress": "(synthetic)",
+   "location": {
+    "latitude": 39.5114,
+    "longitude": -107.4476
+   },
+   "types": [
+    "gas_station",
+    "truck_stop"
+   ],
+   "fuelOptions": {
+    "fuelPrices": [
+     {
+      "type": "REGULAR_UNLEADED",
+      "price": {
+       "currencyCode": "USD",
+       "units": "3",
+       "nanos": 150000000
+      },
+      "updateTime": "2026-10-14T15:30:00Z"
+     },
+     {
+      "type": "DIESEL",
+      "price": {
+       "currencyCode": "USD",
+       "units": "3",
+       "nanos": 790000000
+      },
+      "updateTime": "2026-10-14T15:30:00Z"
+     }
+    ]
+   }
+  },
+  {
+   "id": "synthetic-4",
+   "displayName": {
+    "text": "Love's Travel Stop",
+    "languageCode": "en"
+   },
+   "formattedAddress": "(synthetic)",
+   "location": {
+    "latitude": 39.1226,
+    "longitude": -108.4284
+   },
+   "types": [
+    "gas_station",
+    "truck_stop"
+   ],
+   "fuelOptions": {
+    "fuelPrices": [
+     {
+      "type": "REGULAR_UNLEADED",
+      "price": {
+       "currencyCode": "USD",
+       "units": "2",
+       "nanos": 790000000
+      },
+      "updateTime": "2026-08-01T12:00:00Z"
+     }
+    ]
+   }
+  },
+  {
+   "id": "synthetic-5",
+   "displayName": {
+    "text": "Maverik",
+    "languageCode": "en"
+   },
+   "formattedAddress": "(synthetic)",
+   "location": {
+    "latitude": 39.0044,
+    "longitude": -109.3124
+   },
+   "types": [
+    "gas_station"
+   ],
+   "fuelOptions": {
+    "fuelPrices": [
+     {
+      "type": "REGULAR_UNLEADED",
+      "price": {
+       "currencyCode": "USD",
+       "units": "2",
+       "nanos": 990000000
+      },
+      "updateTime": "2026-10-14T15:30:00Z"
+     },
+     {
+      "type": "DIESEL",
+      "price": {
+       "currencyCode": "USD",
+       "units": "3",
+       "nanos": 790000000
+      },
+      "updateTime": "2026-10-14T15:30:00Z"
+     }
+    ]
+   }
+  },
+  {
+   "id": "synthetic-6",
+   "displayName": {
+    "text": "Flying J Travel Center",
+    "languageCode": "en"
+   },
+   "formattedAddress": "(synthetic)",
+   "location": {
+    "latitude": 38.6957,
+    "longitude": -109.6309
+   },
+   "types": [
+    "gas_station",
+    "truck_stop"
+   ],
+   "fuelOptions": {
+    "fuelPrices": [
+     {
+      "type": "REGULAR_UNLEADED",
+      "price": {
+       "currencyCode": "USD",
+       "units": "3",
+       "nanos": 190000000
+      },
+      "updateTime": "2026-10-14T15:30:00Z"
+     },
+     {
+      "type": "DIESEL",
+      "price": {
+       "currencyCode": "USD",
+       "units": "3",
+       "nanos": 790000000
+      },
+      "updateTime": "2026-10-14T15:30:00Z"
+     }
+    ]
+   }
+  },
+  {
+   "id": "synthetic-7",
+   "displayName": {
+    "text": "Chevron",
+    "languageCode": "en"
+   },
+   "formattedAddress": "(synthetic)",
+   "location": {
+    "latitude": 38.602,
+    "longitude": -109.5633
+   },
+   "types": [
+    "gas_station"
+   ],
+   "fuelOptions": {
+    "fuelPrices": [
+     {
+      "type": "REGULAR_UNLEADED",
+      "price": {
+       "currencyCode": "USD",
+       "units": "3",
+       "nanos": 490000000
+      },
+      "updateTime": "2026-10-14T15:30:00Z"
+     },
+     {
+      "type": "DIESEL",
+      "price": {
+       "currencyCode": "USD",
+       "units": "3",
+       "nanos": 790000000
+      },
+      "updateTime": "2026-10-14T15:30:00Z"
+     }
+    ]
+   }
+  }
+ ]
+}
