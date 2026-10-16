@@ -58,6 +58,9 @@ def main(argv: list[str] | None = None) -> int:
     gas_cmd.add_argument("state", help="Two-letter state code, e.g. UT")
     gas_cmd.add_argument("--diesel", action="store_true")
     gas_cmd.add_argument("--on", type=date.fromisoformat, help="Trip date, YYYY-MM-DD")
+    dash_cmd = sub.add_parser("dashboard", help="Plan and browse trips in a local web page.")
+    dash_cmd.add_argument("--port", type=int, default=8765)
+    dash_cmd.add_argument("--no-browser", action="store_true", help="Don't open a browser tab.")
     args = parser.parse_args(argv)
 
     # Imports are deferred so --help stays fast.
@@ -326,6 +329,11 @@ def main(argv: list[str] | None = None) -> int:
             f"${found.usd_per_gal:.3f}/gal {fuel} in {args.state.upper()}, estimated from the "
             f"EIA {found.area_name} average (weeks through {found.period})"
         )
+        return 0
+    if args.command == "dashboard":
+        from dave.dashboard import serve
+
+        serve(args.port, open_browser=not args.no_browser)
         return 0
     parser.print_help()
     return 0
