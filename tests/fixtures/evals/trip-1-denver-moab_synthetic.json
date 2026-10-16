@@ -1,0 +1,25 @@
+{
+  "note": "Synthetic: hand-written to exercise the scorecard. Not observed reality.",
+  "trip": "trip-1-denver-moab",
+  "drive": [
+    {"day": 1, "drive_hours": 3.1, "source": "routing service", "checked": "2026-10-10"},
+    {"day": 2, "drive_hours": 4.0, "source": "routing service", "checked": "2026-10-10"}
+  ],
+  "campgrounds": [
+    {"name": "Devils Garden Campground (Arches)", "hookups": [], "max_rv_length_ft": 40,
+     "nightly_price_usd": 25, "source": "recreation.gov", "checked": "2026-10-10"},
+    {"name": "Rifle Falls", "nightly_price_usd": 36, "source": "state park page",
+     "checked": "2026-10-10"}
+  ],
+  "gas": [
+    {"state": "CO", "usd_per_gal": 3.05, "source": "EIA", "checked": "2026-10-10"}
+  ],
+  "low_clearances": [
+    {"name": "Old rail bridge", "lat": 39.64, "lon": -106.374, "clearance_ft": 10.5,
+     "source": "OpenStreetMap", "checked": "2026-10-10"},
+    {"name": "Tall overpass", "lat": 39.55, "lon": -107.325, "clearance_ft": 14.0,
+     "source": "OpenStreetMap", "checked": "2026-10-10"},
+    {"name": "Low bridge elsewhere", "lat": 40.5, "lon": -106.0, "clearance_ft": 9.0,
+     "source": "OpenStreetMap", "checked": "2026-10-10"}
+  ]
+}
