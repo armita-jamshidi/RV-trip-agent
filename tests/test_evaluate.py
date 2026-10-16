@@ -58,6 +58,15 @@ def test_a_warned_low_bridge_passes(tmp_path):
     assert "CO" not in checks  # no planning prices given, so no gas check
 
 
+def test_missing_gas_prices_are_not_evaluated_rather_than_failed(tmp_path):
+    itinerary, _ = demo_1(tmp_path)
+    reference = load_reference("trip-1-denver-moab_synthetic", FIXTURES)
+    card = score_trip(itinerary, reference)
+    assert card.not_evaluated == ["gas price: Dave had no EIA prices to plan with"]
+    assert "## Not evaluated" in render_scorecards([card])
+    assert scorecard(tmp_path).not_evaluated == []
+
+
 def test_scorecard_markdown_lists_scores_and_gaps(tmp_path):
     text = render_scorecards([scorecard(tmp_path)])
     assert "| trip-1-denver-moab | 9 | 5 | 56% |" in text

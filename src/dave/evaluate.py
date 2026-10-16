@@ -78,6 +78,7 @@ class Check:
 class Scorecard:
     trip: str
     checks: list[Check] = field(default_factory=list)
+    not_evaluated: list[str] = field(default_factory=list)  # checks skipped for missing data
 
     @property
     def score(self) -> float | None:
@@ -99,6 +100,8 @@ def score_trip(
     card.checks += _drive_times(itinerary, reference)
     card.checks += _campgrounds(itinerary, reference)
     card.checks += _gas(itinerary, reference, gas_prices)
+    if not any(c.kind == "gas price" for c in card.checks):
+        card.not_evaluated.append(_gas_skipped(reference, gas_prices))
     card.checks += _clearances(itinerary, reference)
     return card
 
@@ -189,6 +192,14 @@ def _gas(itinerary: Itinerary, ref: TripReference, prices: list[GasPrice]) -> li
     return out
 
 
+def _gas_skipped(ref: TripReference, prices: list[GasPrice]) -> str:
+    if not ref.gas:
+        return "gas price: no reference state averages"
+    if not prices:
+        return "gas price: Dave had no EIA prices to plan with"
+    return "gas price: Dave's prices don't cover the reference states"
+
+
 def _clearances(itinerary: Itinerary, ref: TripReference) -> list[Check]:
     """Every known low bridge the RV can't pass must be off the route or warned about."""
     height = itinerary.rv.height_ft
@@ -231,4 +242,8 @@ def render_scorecards(cards: list[Scorecard]) -> str:
     gaps = [(c.trip, g) for c in cards for g in c.gaps]
     lines += ["", "## Gaps", ""]
     lines += [f"- {trip}, {g.kind}, {g.subject}: {g.detail}" for trip, g in gaps] or ["None."]
+    skipped = [(c.trip, s) for c in cards for s in c.not_evaluated]
+    if skipped:
+        lines += ["", "## Not evaluated", ""]
+        lines += [f"- {trip}, {s}" for trip, s in skipped]
     return "\n".join(lines) + "\n"
