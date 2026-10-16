@@ -14,6 +14,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command")
     plan_cmd = sub.add_parser("plan", help="Plan a trip from a plain-language request.")
     plan_cmd.add_argument("request", help='e.g. "5 nights from Denver, 32 ft Class A, $1500"')
+    plan_cmd.add_argument("--out", help="Also save the itinerary to this Markdown file (UTF-8).")
     parse_cmd = sub.add_parser("parse", help="Turn a trip request into a constraint spec.")
     parse_cmd.add_argument("request")
     sub.add_parser("eval-parser", help="Score the request parser on evals/parser/cases.jsonl.")
@@ -61,10 +62,39 @@ def main(argv: list[str] | None = None) -> int:
 
     # Imports are deferred so --help stays fast.
     if args.command == "plan":
-        from dave.agent import plan
+        from pathlib import Path
 
-        print(asyncio.run(plan(args.request)))
-        return 0
+        from dave import gas_prices
+        from dave.config import load_settings
+        from dave.http import CachedClient
+        from dave.parser import parse_request
+        from dave.planner import Sources, plan_trip
+        from dave.small_parser import small_parser
+        from dave.store.vectors import FastEmbedder
+
+        settings = load_settings()
+        with CachedClient(settings.cache_dir / "http", offline=settings.offline) as http:
+            parsed = parse_request(
+                args.request, small=small_parser(settings, http), cache_dir=settings.cache_dir
+            )
+            if parsed.question:
+                print(parsed.question)
+                return 2
+            sources = Sources(
+                http=http,
+                embedder=FastEmbedder(settings.cache_dir / "models", settings.embed_model),
+                gas_prices=gas_prices.load(gas_prices.STORE),
+                ridb_key=settings.keys.get("RIDB_API_KEY"),
+                foursquare_key=settings.keys.get("FOURSQUARE_API_KEY"),
+            )
+            trip = plan_trip(args.request, parsed.spec, sources, today=date.today())
+        text = trip.markdown()
+        print(text)
+        if args.out:
+            Path(args.out).write_text(text, encoding="utf-8")
+        if trip.question:
+            return 2
+        return 1 if trip.errors else 0
     if args.command in {"parse", "eval-parser", "compare-parsers"}:
         from dave import parser_eval
         from dave.config import load_settings

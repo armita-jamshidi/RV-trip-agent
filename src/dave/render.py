@@ -9,6 +9,7 @@ with a "not final" banner listing what to fix, never as a finished plan.
 from urllib.parse import urlencode
 
 from dave.budget import DayCost
+from dave.days import stay_nights
 from dave.models import BookingProposal, Campground, DayLeg, Itinerary, Place
 from dave.validator import validate_itinerary
 
@@ -33,10 +34,10 @@ def render_markdown(
     if notes:
         lines += ["", *(f"- {n}" for n in notes)]
 
-    last_nights = spec.nights - len(itinerary.days) + 1
+    nights_at = stay_nights(itinerary.days, 0)
+    last = 0 if spec.round_trip else spec.nights - sum(nights_at)
     previous = None
-    for i, day in enumerate(itinerary.days):
-        stay = last_nights if i == len(itinerary.days) - 1 else 1
+    for day, stay in zip(itinerary.days, [*nights_at[:-1], last], strict=True):
         lines += ["", *_day(day, previous, stay)]
         previous = day.campground
 
@@ -95,7 +96,7 @@ def _day(day: DayLeg, previous: Campground | None, nights: int) -> list[str]:
         for g in day.gas_stations:
             price = f" at ${g.price_per_gal:.2f}/gal" if g.price_per_gal else ""
             out.append(f"- {g.name}{price}")
-    tonight = "Tonight" if nights == 1 else f"Tonight and the next {nights - 1}"
+    tonight = "Tonight" if nights <= 1 else f"Tonight and the next {nights - 1}"
     out += ["", f"**{tonight}**", f"- {_campground(day)}"]
     return out
 

@@ -188,12 +188,14 @@ def ingest(
     http: CachedClient,
     *,
     ridb_key: str,
-    foursquare_key: str,
+    foursquare_key: str | None,
 ) -> list[Campground]:
+    """Campgrounds around each center. Without a Foursquare key, federal (RIDB) ones only."""
     found = []
     for center in centers:
         found += ridb_campgrounds(center, radius_miles, http, ridb_key)
-        found += foursquare_campgrounds(center, radius_miles, http, foursquare_key)
+        if foursquare_key:
+            found += foursquare_campgrounds(center, radius_miles, http, foursquare_key)
     return merge(found)
 
 
