@@ -36,3 +36,28 @@ def test_a_bare_name_is_the_best_known_place_not_the_first_match(tmp_path):
     ]  # fmt: skip
     place = geocode("Yellowstone", client(tmp_path, found))
     assert (place.lat, place.lon) == (44.60, -110.55)
+
+
+def test_a_bare_name_that_is_only_a_county_is_tried_as_a_national_park(tmp_path):
+    county = [
+        {
+            "lat": "45.96",
+            "lon": "-108.28",
+            "importance": 0.6,
+            "display_name": "Yellowstone County, Montana, United States",
+        }
+    ]
+    park = [{"lat": "44.60", "lon": "-110.55", "importance": 0.7,
+             "display_name": "Yellowstone National Park, Wyoming, United States"}]  # fmt: skip
+    seen = []
+
+    def serve(request):
+        seen.append(request.url.params["q"])
+        return httpx.Response(200, json=park if "National Park" in seen[-1] else county)
+
+    http = CachedClient(tmp_path, transport=httpx.MockTransport(serve))
+    place = geocode("Yellowstone", http)
+    assert (place.name, place.lat, place.lon) == ("Yellowstone", 44.60, -110.55)
+    assert seen == ["Yellowstone", "Yellowstone National Park"]
+    # Asked for by county, or with a state, it stays as found.
+    assert geocode("Yellowstone County", client(tmp_path / "c", county)).lat == 45.96

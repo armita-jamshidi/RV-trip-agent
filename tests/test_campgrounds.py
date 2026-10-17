@@ -214,10 +214,12 @@ def test_walk_in_and_hiker_biker_sites_are_not_rv_sites():
         assert parse_site(site) is None, kind
 
 
-def test_hiker_biker_campgrounds_are_skipped(tmp_path):
+@pytest.mark.parametrize(
+    "name", ["Swains Lock Hiker-Biker Campsite", "Fort Hunt Picnic Areas", "Lake Day Use Area"]
+)
+def test_campgrounds_an_rv_cannot_stay_at_are_skipped(tmp_path, name):
     def server(request):
         if request.url.path.endswith("/facilities"):
-            name = "Swains Lock Hiker-Biker Campsite"
             record = {
                 "FacilityID": "1",
                 "FacilityName": name,

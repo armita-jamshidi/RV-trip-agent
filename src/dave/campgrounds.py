@@ -32,9 +32,10 @@ SAME_PLACE_MILES = 0.5
 SAME_SPOT_MILES = 0.1  # this close, names need not match
 GENERIC_WORDS = {"campground", "campgrounds", "camp", "rv", "park", "resort", "the", "and"}
 
-# Sites and campgrounds an RV can't drive up to, whatever equipment they list.
+# Sites and campgrounds an RV can't drive up to or stay the night at, whatever they list.
 NOT_DRIVE_UP = re.compile(
-    r"walk[- ]?(?:in|to)|hike[- ]?(?:in|to)|hiker[- /]?biker|boat[- ]?(?:in|to)|paddle[- ]?in",
+    r"walk[- ]?(?:in|to)|hike[- ]?(?:in|to)|hiker[- /]?biker|boat[- ]?(?:in|to)|paddle[- ]?in"
+    r"|picnic|day[- ]use",
     re.IGNORECASE,
 )
 MIN_NIGHTLY_USD = 5.0  # smaller fees are per person or day use, not an RV site's night
