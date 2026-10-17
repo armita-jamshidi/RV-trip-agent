@@ -64,3 +64,13 @@ def split_days(
         )
         for n, piece in enumerate(pieces, 1)
     ]
+
+
+def stay_nights(days: list[DayLeg], last: int) -> list[int]:
+    """Nights spent at each day's end: the days until the next driving day (1 when undated),
+    and `last` for the final day (0 when it ends at home)."""
+    out = []
+    for day, after in zip(days, days[1:], strict=False):
+        dated = day.travel_date and after.travel_date
+        out.append((after.travel_date - day.travel_date).days if dated else 1)
+    return [*out, last] if days else []

@@ -10,13 +10,20 @@ import math
 import re
 from dataclasses import dataclass, field
 
+import httpx
+
 from dave.corridor import locate
 from dave.geo import Point
 from dave.http import CachedClient, SourceError
 from dave.models import Place, Route
 from dave.routing import RoutingError, routes
 
-OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+# The main public Overpass server, then a free public mirror of the same data for when it is
+# overloaded (decision 2026-10-17-t35).
+OVERPASS_URLS = (
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+)
 MARGIN_FT = 0.5
 ON_ROUTE_MILES = 0.015  # about 25 m: a way's node this close is on the route
 CHUNK_POINTS = 100  # route points per Overpass query, keeping URLs short
@@ -77,16 +84,28 @@ def _query(points: list[Point]) -> str:
     )
 
 
+def _overpass(query: str, http: CachedClient) -> list[dict]:
+    """The query's elements from the first Overpass server that answers."""
+    errors = []
+    for url in OVERPASS_URLS:
+        try:
+            response = http.get(url, params={"data": query})
+        except httpx.TransportError as e:
+            errors.append(str(e) or type(e).__name__)
+            continue
+        if response.is_success:
+            return response.json().get("elements", [])
+        errors.append(f"Overpass answered {response.status_code}")
+    raise SourceError("; ".join(dict.fromkeys(errors)))
+
+
 def restrictions(line: list[Point], http: CachedClient) -> list[Restriction]:
     """Height limits and propane bans on ways that run along `line`."""
     found: dict[int, Restriction] = {}
     step = CHUNK_POINTS - 1  # chunks overlap by one point so no segment is skipped
     for start in range(0, max(1, len(line) - 1), step):
         chunk = line[start : start + CHUNK_POINTS]
-        response = http.get(OVERPASS_URL, params={"data": _query(chunk)})
-        if not response.is_success:
-            raise SourceError(f"Overpass answered {response.status_code}")
-        for way in response.json().get("elements", []):
+        for way in _overpass(_query(chunk), http):
             nodes = [(n["lat"], n["lon"]) for n in way.get("geometry", [])]
             on_route = [p for p in nodes if locate(p, line)[1] <= ON_ROUTE_MILES]
             if way["id"] in found or len(on_route) < 2:

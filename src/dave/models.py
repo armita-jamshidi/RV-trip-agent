@@ -171,7 +171,8 @@ class GasStation(Model):
 
 
 class GasPrice(Model):
-    """A weekly average retail price for one area, as published by EIA. Never a station price."""
+    """An average retail price for one area: EIA's weekly survey, or the average of the posted
+    station prices Google Places returned there (area name ends in "(Google)")."""
 
     period: date = Field(description="EIA week, dated the Monday it was surveyed")
     area: str = Field(description="EIA duoarea code: NUS, a region like R40, or a state like SCO")

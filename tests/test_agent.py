@@ -4,7 +4,6 @@ import json
 from claude_agent_sdk import AssistantMessage, ResultMessage, TextBlock, ToolUseBlock
 
 from dave import agent, tools
-from dave.cli import main
 from dave.tools.defaults import trip_defaults
 
 
@@ -70,11 +69,3 @@ def test_plan_collects_assistant_text():
     reply = asyncio.run(agent.plan("5 nights from Denver", options=agent.build_options(), run=run))
     assert reply == "Day 1: Denver\nDay 2: Moab"
     assert calls == ["5 nights from Denver"]
-
-
-def test_cli_plan(monkeypatch, capsys):
-    run, calls = fake_query("Here is your trip.")
-    monkeypatch.setattr(agent, "query", run)
-    assert main(["plan", "weekend near Austin"]) == 0
-    assert "Here is your trip." in capsys.readouterr().out
-    assert calls == ["weekend near Austin"]

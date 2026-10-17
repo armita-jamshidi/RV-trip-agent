@@ -32,6 +32,13 @@ SAME_PLACE_MILES = 0.5
 SAME_SPOT_MILES = 0.1  # this close, names need not match
 GENERIC_WORDS = {"campground", "campgrounds", "camp", "rv", "park", "resort", "the", "and"}
 
+# Sites and campgrounds an RV can't drive up to or stay the night at, whatever they list.
+NOT_DRIVE_UP = re.compile(
+    r"walk[- ]?(?:in|to)|hike[- ]?(?:in|to)|hiker[- /]?biker|boat[- ]?(?:in|to)|paddle[- ]?in"
+    r"|picnic|day[- ]use",
+    re.IGNORECASE,
+)
+MIN_NIGHTLY_USD = 5.0  # smaller fees are per person or day use, not an RV site's night
 RV_EQUIPMENT = re.compile(r"\brv\b|trailer|fifth wheel|motorhome|camper van", re.IGNORECASE)
 YES = {"y", "yes", "true"}
 
@@ -46,7 +53,9 @@ def ridb_campgrounds(
     facilities = _ridb_all(http, f"{RIDB_URL}/facilities", params, api_key)
     out = []
     for f in facilities:
-        if f.get("FacilityTypeDescription") != "Campground":
+        if f.get("FacilityTypeDescription") != "Campground" or NOT_DRIVE_UP.search(
+            f.get("FacilityName") or ""
+        ):
             continue
         raw_sites = _ridb_all(
             http, f"{RIDB_URL}/facilities/{f['FacilityID']}/campsites", {}, api_key
@@ -88,6 +97,8 @@ def parse_site(raw: dict) -> CampSite | None:
         e for e in raw.get("PERMITTEDEQUIPMENT") or [] if RV_EQUIPMENT.search(e["EquipmentName"])
     ]
     site_type = (raw.get("CampsiteType") or "").lower()
+    if NOT_DRIVE_UP.search(site_type):
+        return None
     if not rv_equipment and "rv" not in site_type.split():
         return None
 
@@ -188,12 +199,14 @@ def ingest(
     http: CachedClient,
     *,
     ridb_key: str,
-    foursquare_key: str,
+    foursquare_key: str | None,
 ) -> list[Campground]:
+    """Campgrounds around each center. Without a Foursquare key, federal (RIDB) ones only."""
     found = []
     for center in centers:
         found += ridb_campgrounds(center, radius_miles, http, ridb_key)
-        found += foursquare_campgrounds(center, radius_miles, http, foursquare_key)
+        if foursquare_key:
+            found += foursquare_campgrounds(center, radius_miles, http, foursquare_key)
     return merge(found)
 
 
@@ -220,7 +233,7 @@ def _name_similarity(a: str, b: str) -> float:
 
 def _lowest_dollars(text: str) -> float | None:
     amounts = [float(x.replace(",", "")) for x in re.findall(r"\$\s?(\d[\d,]*(?:\.\d+)?)", text)]
-    return min(amounts, default=None)
+    return min((a for a in amounts if a >= MIN_NIGHTLY_USD), default=None)
 
 
 def _number(text: str | None) -> float | None:

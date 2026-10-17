@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 import json
+import sys
 from datetime import date
 
 from dave import __version__
@@ -14,6 +15,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command")
     plan_cmd = sub.add_parser("plan", help="Plan a trip from a plain-language request.")
     plan_cmd.add_argument("request", help='e.g. "5 nights from Denver, 32 ft Class A, $1500"')
+    plan_cmd.add_argument("--out", help="Also save the itinerary to this Markdown file (UTF-8).")
     parse_cmd = sub.add_parser("parse", help="Turn a trip request into a constraint spec.")
     parse_cmd.add_argument("request")
     sub.add_parser("eval-parser", help="Score the request parser on evals/parser/cases.jsonl.")
@@ -64,10 +66,21 @@ def main(argv: list[str] | None = None) -> int:
 
     # Imports are deferred so --help stays fast.
     if args.command == "plan":
-        from dave.agent import plan
+        from pathlib import Path
 
-        print(asyncio.run(plan(args.request)))
-        return 0
+        from dave.planner import plan_request
+
+        trip = plan_request(args.request)
+        text = trip.markdown()
+        if args.out and trip.itinerary:
+            Path(args.out).write_text(text, encoding="utf-8")
+        # Windows consoles default to a code page without the plan's emoji.
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(errors="replace")
+        print(text)
+        if trip.question:
+            return 2
+        return 1 if trip.errors else 0
     if args.command in {"parse", "eval-parser", "compare-parsers"}:
         from dave import parser_eval
         from dave.config import load_settings

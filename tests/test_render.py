@@ -103,3 +103,4 @@ def test_food_and_unpriced_campground_lines():
     text = render_markdown(itinerary)
     assert "**Food**\n- Slope & Hatch (Tacos, rated 8.6/10, $)" in text
     assert "> - Day 1: no campground for the night." in text
+    assert "- No campground found yet; see the notes above." in text and "Home" not in text
