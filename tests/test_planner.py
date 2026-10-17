@@ -198,7 +198,7 @@ def _fake_trip(tmp_path):
 
 class OverpassDown(World):
     def __call__(self, request):
-        if request.url.host == "overpass-api.de":
+        if request.url.host in {"overpass-api.de", "overpass.kumi.systems"}:
             return httpx.Response(406, text="Not Acceptable")
         return super().__call__(request)
 
