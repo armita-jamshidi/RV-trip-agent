@@ -14,6 +14,7 @@ the traveler knows the total may be low.
 
 from dataclasses import dataclass, field
 
+from dave.days import stay_nights
 from dave.fuel_cost import FuelEstimate
 from dave.models import BookingProposal, CostBreakdown, DayLeg
 from dave.overnight import NightPick, with_campgrounds
@@ -73,11 +74,11 @@ def day_costs(
     *,
     extra_nights: int = 0,
 ) -> list[DayCost]:
-    """Each day's spending. `extra_nights` are spent at the last campground (a longer stay)."""
+    """Each day's spending. A campground is paid for every night until the next driving day;
+    `extra_nights` are spent at the last campground (a longer stay)."""
     fuel_by_day = {d.day: d.usd for d in fuel.days}
     out = []
-    for i, day in enumerate(days):
-        nights = 1 + (extra_nights if i == len(days) - 1 else 0)
+    for i, (day, nights) in enumerate(zip(days, stay_nights(days, 1 + extra_nights), strict=True)):
         price = day.campground.nightly_price_usd if day.campground else None
         on_day = [
             t.price_usd
@@ -148,12 +149,12 @@ def _plan(days, picks, fuel, budget_usd, extra_nights, ticket_rules, changes) ->
 def _best_swap(days, picks, extra_nights):
     """The campground swap that saves the most: (pick index, alternative, saving, note)."""
     best = None
-    last = days[-1].day if days else None
+    nights_at = {d.day: n for d, n in zip(days, stay_nights(days, 1 + extra_nights), strict=True)}
     for i, p in enumerate(picks):
         if p.pick is None or p.pick.campground.nightly_price_usd is None:
             continue
         now = p.pick.campground.nightly_price_usd
-        nights = 1 + (extra_nights if p.day == last else 0)
+        nights = nights_at.get(p.day, 1)
         for alt in p.alternatives:
             price = alt.campground.nightly_price_usd
             if alt.fit.fit is not Fit.YES or price is None or price >= now:

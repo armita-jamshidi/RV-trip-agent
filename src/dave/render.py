@@ -9,6 +9,7 @@ with a "not final" banner listing what to fix, never as a finished plan.
 from urllib.parse import urlencode
 
 from dave.budget import DayCost
+from dave.days import stay_nights
 from dave.models import BookingProposal, Campground, DayLeg, Itinerary, Place
 from dave.validator import validate_itinerary
 
@@ -33,10 +34,10 @@ def render_markdown(
     if notes:
         lines += ["", *(f"- {n}" for n in notes)]
 
-    last_nights = spec.nights - len(itinerary.days) + 1
+    nights_at = stay_nights(itinerary.days, 0)
+    last = 0 if spec.round_trip else spec.nights - sum(nights_at)
     previous = None
-    for i, day in enumerate(itinerary.days):
-        stay = last_nights if i == len(itinerary.days) - 1 else 1
+    for day, stay in zip(itinerary.days, [*nights_at[:-1], last], strict=True):
         lines += ["", *_day(day, previous, stay)]
         previous = day.campground
 
@@ -93,17 +94,22 @@ def _day(day: DayLeg, previous: Campground | None, nights: int) -> list[str]:
     if day.gas_stations:
         out += ["", "**Gas**"]
         for g in day.gas_stations:
-            price = f" at ${g.price_per_gal:.2f}/gal" if g.price_per_gal else ""
+            if g.price_per_gal:
+                price = f", ${g.price_per_gal:.2f}/gal posted"
+            elif g.avg_price_60d:
+                price = f", about ${g.avg_price_60d:.2f}/gal (area average)"
+            else:
+                price = ""
             out.append(f"- {g.name}{price}")
-    tonight = "Tonight" if nights == 1 else f"Tonight and the next {nights - 1}"
-    out += ["", f"**{tonight}**", f"- {_campground(day)}"]
+    tonight = "Tonight" if nights <= 1 else f"Tonight and the next {nights - 1}"
+    out += ["", f"**{tonight}**", f"- {_campground(day, home=nights == 0)}"]
     return out
 
 
-def _campground(day: DayLeg) -> str:
+def _campground(day: DayLeg, *, home: bool) -> str:
     camp = day.campground
     if camp is None:
-        return "Home."
+        return "Home." if home else "No campground found yet; see the notes above."
     hookups = camp.hookups or set().union(*(s.hookups for s in camp.sites))
     parts = [camp.name]
     if camp.nightly_price_usd is not None:
@@ -132,7 +138,9 @@ def _costs(itinerary: Itinerary, per_day: list[DayCost] | None) -> list[str]:
         left = c.remaining_usd
         verdict = f"{_usd(left)} to spare" if left >= 0 else f"{_usd(-left)} over"
         out += ["", f"Budget {_usd(c.budget_usd)}: {verdict}."]
-    out += ["", "Fuel is an estimate from regional average prices."]
+    posted = any(g.price_per_gal for d in itinerary.days for g in d.gas_stations)
+    source = "posted station prices and area averages" if posted else "regional average prices"
+    out += ["", f"Fuel is an estimate from {source}."]
     return out
 
 

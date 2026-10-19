@@ -15,6 +15,8 @@ from urllib.parse import urlsplit
 import httpx
 
 RETRY_STATUSES = {429, 500, 502, 503, 504}
+# Overpass and Nominatim refuse anonymous clients (httpx's default User-Agent gets a 406).
+USER_AGENT = "dave-rv-trip-agent/0.1 (+https://github.com/armita-jamshidi/rv-trip-agent)"
 
 
 class OfflineCacheMiss(RuntimeError):
@@ -54,7 +56,12 @@ class CachedClient:
         self.min_interval = min_interval
         self._sleep = sleep
         self._last_call: dict[str, float] = {}
-        self._http = httpx.Client(timeout=timeout, transport=transport, follow_redirects=True)
+        self._http = httpx.Client(
+            timeout=timeout,
+            transport=transport,
+            follow_redirects=True,
+            headers={"User-Agent": USER_AGENT},
+        )
 
     def get(
         self,
@@ -66,8 +73,15 @@ class CachedClient:
     ):
         return self.request("GET", url, params=params, headers=headers, secret_params=secret_params)
 
-    def post(self, url: str, *, json_body: object = None, headers: dict | None = None):
-        return self.request("POST", url, json_body=json_body, headers=headers)
+    def post(
+        self,
+        url: str,
+        *,
+        json_body: object = None,
+        headers: dict | None = None,
+        cache: bool = True,
+    ):
+        return self.request("POST", url, json_body=json_body, headers=headers, cache=cache)
 
     def request(
         self,
@@ -78,21 +92,23 @@ class CachedClient:
         json_body: object = None,
         headers: dict | None = None,
         secret_params: dict | None = None,
+        cache: bool = True,
     ) -> httpx.Response:
         """Return a cached response when present; otherwise fetch, cache 2xx and return.
 
         Headers and `secret_params` (API keys a source wants in the query string) are not part
-        of the cache key, so keys never affect it.
+        of the cache key, so keys never affect it. `cache=False` is for sources whose terms
+        forbid storing their answers (Google Places prices): always fetched, never written.
         """
         path = self.cache_dir / f"{cache_key(method, url, params, json_body)}.json"
-        if path.exists():
+        if cache and path.exists():
             return _load(path, method, url)
         if self.offline:
             raise OfflineCacheMiss(f"No cached response for {method} {url} {params or ''}")
 
         query = {**(params or {}), **(secret_params or {})} or None
         response = self._fetch(method, url, params=query, json=json_body, headers=headers)
-        if response.is_success:
+        if cache and response.is_success:
             _store(path, response)
         return response
 

@@ -6,7 +6,13 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-API_KEYS = ("ANTHROPIC_API_KEY", "FOURSQUARE_API_KEY", "RIDB_API_KEY", "EIA_API_KEY")
+API_KEYS = (
+    "ANTHROPIC_API_KEY",
+    "FOURSQUARE_API_KEY",
+    "RIDB_API_KEY",
+    "EIA_API_KEY",
+    "GOOGLE_PLACES_API_KEY",
+)
 
 
 class MissingKeyError(RuntimeError):

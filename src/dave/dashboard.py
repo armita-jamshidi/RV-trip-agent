@@ -7,7 +7,6 @@ the cost table, the validator's "Not final" warnings and the bookings waiting fo
 There are no payment or booking buttons: approving and booking stay outside (CLAUDE.md rule 1).
 """
 
-import asyncio
 import html
 import re
 import webbrowser
@@ -26,10 +25,10 @@ Planner = Callable[[str], str]  # trip request in, Markdown itinerary out
 
 
 def agent_planner(request: str) -> str:
-    """The planner behind `dave plan`."""
-    from dave.agent import plan
+    """The planner behind `dave plan`: the itinerary, or the question to ask the traveler."""
+    from dave.planner import plan_request
 
-    return asyncio.run(plan(request))
+    return plan_request(request).markdown()
 
 
 def demo_requests(demo_dir: Path = DEMO_DIR) -> list[str]:

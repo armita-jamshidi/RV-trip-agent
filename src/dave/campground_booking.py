@@ -42,25 +42,30 @@ class Stay:
         return None if price is None else round(price * self.nights, 2)
 
 
-def stays(days: list[DayLeg], picks: list[NightPick]) -> list[Stay]:
-    """One stay per run of nights at the same campground. Days need their travel dates."""
+def stays(
+    days: list[DayLeg], picks: list[NightPick], nights: dict[int, int] | None = None
+) -> list[Stay]:
+    """One stay per run of nights at the same campground. Days need their travel dates.
+    `nights` gives how many nights each day's pick is for (default 1)."""
     dated = {d.day: d.travel_date for d in days}
+    nights = nights or {}
     out: list[Stay] = []
     for p in sorted((p for p in picks if p.pick), key=lambda p: p.day):
         night = dated.get(p.day)
         if night is None:
             raise ValueError(f"Day {p.day} has no date; set travel dates before booking.")
         camp = p.pick.campground
+        n = nights.get(p.day, 1)
         last = out[-1] if out else None
         if last and last.campground == camp and last.check_out == night:
-            out[-1] = Stay(camp, last.check_in, last.nights + 1, last.site, last.site_id, last.fit)
+            out[-1] = Stay(camp, last.check_in, last.nights + n, last.site, last.site_id, last.fit)
             continue
         site = next((s for s in camp.sites if s.name in p.pick.fit.sites), None)
         out.append(
             Stay(
                 camp,
                 night,
-                1,
+                n,
                 site.name if site else None,
                 site.site_id if site else None,
                 p.pick.fit.reason,
@@ -81,11 +86,11 @@ def booking_link(stay: Stay) -> str | None:
 
 
 def campground_proposals(
-    days: list[DayLeg], picks: list[NightPick]
+    days: list[DayLeg], picks: list[NightPick], nights: dict[int, int] | None = None
 ) -> tuple[list[BookingProposal], list[str]]:
     """Proposals for every priced stay, and a note for each stay that has no listed price."""
     proposals, notes = [], []
-    for stay in stays(days, picks):
+    for stay in stays(days, picks, nights):
         if stay.price_usd is None:
             contact = f" ({stay.campground.phone})" if stay.campground.phone else ""
             notes.append(

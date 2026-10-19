@@ -1,10 +1,10 @@
 """Where to fill up so the RV never runs low and buys its fuel where it is cheapest.
 
-There are no station prices (no free source allows collecting them, decision 2026-10-09), so a
-station's price is the EIA average for its area (T22). Savings come from buying in the cheaper
-state or region before crossing into a dearer one. Among stations in the same area, chains that
-usually sell below the local average (warehouse clubs, supermarket stations) are preferred,
-without claiming a price for them.
+A station's price is its own posted price when Google Places has a recent one (T37), else the
+EIA average for its area (T22). Savings come from the cheaper station or the cheaper state or
+region ahead. Among stations at the same price, chains that usually sell below the local
+average (warehouse clubs, supermarket stations) are preferred, without claiming a price for
+them.
 
 Big rigs only use stations that can take them: truck stops and travel centers, by category or
 by chain. The plan keeps a quarter tank in reserve and starts with a fill-up near the origin.
@@ -69,7 +69,11 @@ class FillUpPlan:
     def summary(self) -> list[str]:
         lines = [
             f"Day {s.day}: fill {s.gallons:.0f} gal at {s.station.name} (mile {s.trip_miles:.0f}),"
-            f" about ${s.station.avg_price_60d:.2f}/gal area average: ${s.usd:,.2f}"
+            + (
+                f" ${s.station.price_per_gal:.2f}/gal posted: ${s.usd:,.2f}"
+                if s.station.price_per_gal
+                else f" about ${s.station.avg_price_60d:.2f}/gal area average: ${s.usd:,.2f}"
+            )
             for s in self.stops
         ]
         if self.saving_usd >= 1:
@@ -85,12 +89,16 @@ class FillUpPlan:
         return lines + self.warnings
 
 
-def foursquare_station(place: dict, fuel_type: FuelType) -> GasStation:
-    categories = " ".join(c["name"] for c in place.get("categories") or []).lower()
-    name = place["name"].lower()
-    big_rig = any(c in categories for c in BIG_RIG_CATEGORIES) or any(
+def big_rig(name: str, categories: str) -> bool:
+    """A truck stop or travel center, by category or by chain name."""
+    categories, name = categories.lower(), name.lower()
+    return any(c in categories for c in BIG_RIG_CATEGORIES) or any(
         re.search(rf"(?<![\w']){re.escape(c)}(?![\w'])", name) for c in BIG_RIG_CHAINS
     )
+
+
+def foursquare_station(place: dict, fuel_type: FuelType) -> GasStation:
+    categories = " ".join(c["name"] for c in place.get("categories") or [])
     return GasStation(
         name=place["name"],
         location=Place(
@@ -100,7 +108,7 @@ def foursquare_station(place: dict, fuel_type: FuelType) -> GasStation:
             address=(place.get("location") or {}).get("formatted_address"),
         ),
         fuel_type=fuel_type,
-        rv_accessible=True if big_rig else None,
+        rv_accessible=True if big_rig(place["name"], categories) else None,
     )
 
 
@@ -150,18 +158,18 @@ def plan_fillups(
     day_ends = [sum(d.miles for d in days[: i + 1]) for i in range(len(days))]
     when = days[0].travel_date or today
 
-    big_rig = rv.total_length_ft > BIG_RIG_FT
-    usable = [s for s in stations if s.rv_accessible or not big_rig]
+    too_big = rv.total_length_ft > BIG_RIG_FT
+    usable = [s for s in stations if s.rv_accessible or not too_big]
     hits = along_route(usable, line, _where, buffer_miles=BUFFER_MILES)
     priced: list[tuple[float, GasStation]] = []
     for h in hits:
-        price = price_for(prices, nearest_state(_where(h.item)), rv.fuel_type, when)
-        if price:
-            station = h.item.model_copy(update={"avg_price_60d": price.usd_per_gal})
+        area = price_for(prices, nearest_state(_where(h.item)), rv.fuel_type, when)
+        if area or h.item.price_per_gal:
+            station = h.item.model_copy(update={"avg_price_60d": area and area.usd_per_gal})
             priced.append((h.along_miles * scale, station))
 
     warnings = []
-    if big_rig and len(usable) < len(stations):
+    if too_big and len(usable) < len(stations):
         warnings.append(
             "Only truck stops and travel centers are planned: the RV is too big for most pumps."
         )
@@ -175,7 +183,7 @@ def plan_fillups(
     fuel = reserve - at / miles_per_gal  # the drive to the opening fill-up dips into the reserve
     while True:
         ahead = [(m, s) for m, s in priced if at < m <= at + full_range]
-        cheaper = next(((m, s) for m, s in ahead if s.avg_price_60d < station.avg_price_60d), None)
+        cheaper = next(((m, s) for m, s in ahead if _cost(s) < _cost(station)), None)
         if cheaper:
             need = (cheaper[0] - at) / miles_per_gal + reserve
             target = cheaper
@@ -192,7 +200,7 @@ def plan_fillups(
                     day=next(i + 1 for i, end in enumerate(day_ends) if at <= end + 1e-6),
                     trip_miles=round(at, 1),
                     gallons=round(buy, 1),
-                    usd=round(buy * station.avg_price_60d, 2),
+                    usd=round(buy * _cost(station), 2),
                 )
             )
             fuel += buy
@@ -210,9 +218,14 @@ def plan_fillups(
 
 
 def _rank(station: GasStation, miles: float, at: float) -> tuple:
-    """Cheapest area first, then a usually-cheaper chain, then the farthest along."""
+    """Cheapest first, then a usually-cheaper chain, then the farthest along."""
     chain = any(c in station.name.lower() for c in USUALLY_CHEAPER)
-    return station.avg_price_60d, not chain, -(miles - at)
+    return _cost(station), not chain, -(miles - at)
+
+
+def _cost(station: GasStation) -> float:
+    """The station's own price when known, else its area's average."""
+    return station.price_per_gal or station.avg_price_60d
 
 
 def _where(station: GasStation) -> Point:

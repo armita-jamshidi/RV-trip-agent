@@ -1,0 +1,1 @@
+- 2026-10-17: Bridge heights fall back to a free public Overpass mirror (overpass.kumi.systems, same OpenStreetMap data, no key) when overpass-api.de errors or times out, because the main server was overloaded on every demo run (Armita's OK, free sources only). If both fail, the day is still marked "Not final" with both reasons.

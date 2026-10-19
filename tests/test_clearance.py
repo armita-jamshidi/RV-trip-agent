@@ -6,13 +6,13 @@ import pytest
 
 from dave.clearance import (
     CHUNK_POINTS,
-    OVERPASS_URL,
+    OVERPASS_URLS,
     check,
     clear_route,
     parse_height,
     restrictions,
 )
-from dave.http import CachedClient
+from dave.http import CachedClient, SourceError
 from dave.models import Place
 from dave.routing import route
 
@@ -32,7 +32,7 @@ class Servers:
 
     def __call__(self, request: httpx.Request) -> httpx.Response:
         url = str(request.url)
-        if url.startswith(OVERPASS_URL):
+        if url.startswith(OVERPASS_URLS):
             self.overpass_calls.append(request.url.params["data"])
             return httpx.Response(200, json=self.overpass)
         self.osrm_calls.append(url)
@@ -99,7 +99,7 @@ def test_detour_waypoint_is_used_when_alternatives_fail(tmp_path):
     class NoAlternatives(Servers):
         def __call__(self, request):
             if "alternatives" in request.url.params and not str(request.url).startswith(
-                OVERPASS_URL
+                OVERPASS_URLS
             ):
                 self.osrm_calls.append(str(request.url))
                 return httpx.Response(200, json=only_direct)
@@ -148,3 +148,29 @@ def test_long_routes_are_queried_in_overlapping_chunks(tmp_path):
 )
 def test_parse_height(tag, feet):
     assert parse_height(tag) == (pytest.approx(feet, abs=0.001) if feet else None)
+
+
+class Overloaded(Servers):
+    """The main Overpass server is busy; the mirror answers unless it is down too."""
+
+    def __init__(self, mirror_up=True):
+        super().__init__()
+        self.mirror_up = mirror_up
+
+    def __call__(self, request):
+        if str(request.url).startswith(OVERPASS_URLS[0]):
+            return httpx.Response(502, text="Bad Gateway")
+        if str(request.url).startswith(OVERPASS_URLS[1]) and not self.mirror_up:
+            raise httpx.ReadTimeout("The read operation timed out")
+        return super().__call__(request)
+
+
+def test_a_busy_overpass_server_falls_back_to_the_mirror(tmp_path):
+    servers = Overloaded()
+    result = clear_route(NORTH, SOUTH, 12.0, http(tmp_path, servers))
+    assert result.rerouted and servers.overpass_calls
+
+
+def test_both_overpass_servers_failing_says_why(tmp_path):
+    with pytest.raises(SourceError, match="Overpass answered 502; The read operation timed out"):
+        clear_route(NORTH, SOUTH, 12.0, http(tmp_path, Overloaded(mirror_up=False)))
