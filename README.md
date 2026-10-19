@@ -1,6 +1,12 @@
 # Dave, an RV trip planner
 
 <p align="center">
+  <img src="docs/images/dave-banner.png" alt="Dave, RV Travel Agent: a cream motorhome driving a desert highway at sunset" width="100%">
+</p>
+
+<p align="center">
+  <b>Dashboard</b>
+  <br>
   <img src="docs/images/dashboard-demo-trip-1.png" alt="Dave's dashboard showing demo trip 1, Denver to Moab, as day cards with a cost table and a booking to approve" width="420">
   <br>
   <sub>Dave's local dashboard with demo trip 1, built from recorded test data. Screenshot from this project.</sub>
