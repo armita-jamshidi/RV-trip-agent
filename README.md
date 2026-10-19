@@ -34,14 +34,14 @@ and books every campground and ticket.
 | --- | --- |
 | Real trips planned with Dave | **3**, including museum stops the author would have driven past |
 | Planning time saved | **~10 hours** across the 3 trips |
-| Saved on campgrounds | **$250** in total, on the campgrounds Dave found |
+| Saved on campgrounds | **$250** in total, compared with the campgrounds the author would have booked |
 | Real-world checks passed on demo trip 1 | **2 of 5** (Dave's drive times run 22% to 24% short of OSRM's) |
 | Hard rules checked in code before a plan is shown | **5**: clearance, site length, hookups, 5 h a day, budget |
 | Free data sources | **6**: Foursquare, RIDB, OSRM, Overpass, EIA, maker spec pages |
 | Automated tests | **347**, run in CI on every pull request and push to `main` |
 | Lines of Python | **5,688** in `src/dave/`, plus 4,079 lines of tests |
 
-The trip count, time saved and campground savings are the author's own figures from her
+The trip count, time saved and campground savings are the author's own figures from those
 trips. The real-world score comes from [evals/scorecard.md](evals/scorecard.md), which
 compares demo trip 1 with facts collected from OSRM, Recreation.gov and Overpass. The test
 count comes from `uv run pytest` and the line counts from `wc -l` on this commit.
